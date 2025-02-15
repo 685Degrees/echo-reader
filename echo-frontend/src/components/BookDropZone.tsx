@@ -4,12 +4,13 @@ import { FileUp } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 // @ts-ignore: react-pdftotext module has no type declarations
 import pdfToText from "react-pdftotext";
+import ePub from "epubjs";
 
-interface PDFDropZoneProps {
+interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
 }
 
-export function PDFDropZone({ onTextExtracted }: PDFDropZoneProps) {
+export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
@@ -35,11 +36,44 @@ export function PDFDropZone({ onTextExtracted }: PDFDropZoneProps) {
     pdfToText(file)
       .then((text: string) => {
         onTextExtracted(text);
-        console.log("Extracted text:", text);
+        console.log("Extracted text from PDF:", text);
       })
       .catch((error: any) => {
-        console.error("Failed to extract text from pdf", error);
+        console.error("Failed to extract text from PDF", error);
       });
+  };
+
+  const extractTextFromEpub = async (file: File) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const book = ePub(arrayBuffer);
+      await book.ready;
+
+      let fullText = "";
+      // @ts-ignore: spine.items exists at runtime
+      const items = book.spine.items;
+
+      for (const item of items) {
+        try {
+          const content = await book.load(item.href);
+
+          // Handle content as Document object
+          const doc = content as Document;
+          if (doc && doc.body) {
+            const text = doc.body.textContent || "";
+            fullText += text.trim() + "\n\n";
+          }
+        } catch (err) {
+          console.warn(`Failed to extract text from ${item.href}:`, err);
+          continue;
+        }
+      }
+
+      onTextExtracted(fullText.trim());
+      console.log("Extracted text from EPUB successfully");
+    } catch (error) {
+      console.error("Failed to extract text from EPUB", error);
+    }
   };
 
   const handleDrop = useCallback(
@@ -49,13 +83,25 @@ export function PDFDropZone({ onTextExtracted }: PDFDropZoneProps) {
       setIsDragging(false);
 
       const files = Array.from(e.dataTransfer.files);
-      if (files.length > 0 && files[0].type === "application/pdf") {
-        if (files[0].size > MAX_FILE_SIZE) {
+      if (files.length > 0) {
+        const file = files[0];
+        if (file.size > MAX_FILE_SIZE) {
           alert("File size exceeds 10MB limit");
           return;
         }
-        setSelectedFile(files[0].name);
-        extractTextFromPdf(files[0]);
+
+        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+          setSelectedFile(file.name);
+          extractTextFromPdf(file);
+        } else if (
+          file.type === "application/epub+zip" ||
+          file.name.endsWith(".epub")
+        ) {
+          setSelectedFile(file.name);
+          extractTextFromEpub(file);
+        } else {
+          alert("Please upload a PDF or EPUB file");
+        }
       }
     },
     [onTextExtracted]
@@ -64,13 +110,22 @@ export function PDFDropZone({ onTextExtracted }: PDFDropZoneProps) {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      if (file.type === "application/pdf") {
-        if (file.size > MAX_FILE_SIZE) {
-          alert("File size exceeds 10MB limit");
-          return;
-        }
+      if (file.size > MAX_FILE_SIZE) {
+        alert("File size exceeds 10MB limit");
+        return;
+      }
+
+      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
         setSelectedFile(file.name);
         extractTextFromPdf(file);
+      } else if (
+        file.type === "application/epub+zip" ||
+        file.name.endsWith(".epub")
+      ) {
+        setSelectedFile(file.name);
+        extractTextFromEpub(file);
+      } else {
+        alert("Please upload a PDF or EPUB file");
       }
     }
   };
@@ -94,7 +149,7 @@ export function PDFDropZone({ onTextExtracted }: PDFDropZoneProps) {
       <input
         id="file-input"
         type="file"
-        accept=".pdf"
+        accept=".pdf,.epub"
         className="hidden"
         onChange={handleFileSelect}
       />
@@ -116,10 +171,10 @@ export function PDFDropZone({ onTextExtracted }: PDFDropZoneProps) {
       ) : (
         <div className="text-center">
           <Subheader2 className="mb-2 text-gray-700">
-            Drop your PDF of your book here
+            Drop your book here
           </Subheader2>
           <Paragraph className="text-gray-500">
-            Maximum file size: 10MB
+            Supports PDF and EPUB formats • Maximum file size: 10MB
           </Paragraph>
         </div>
       )}

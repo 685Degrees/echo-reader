@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { PDFDropZone } from "@/components/PDFDropZone";
+import { BookDropZone } from "@/components/BookDropZone";
 import { AudioProgress } from "@/components/AudioProgress";
 import { AudioControls } from "@/components/AudioControls";
 
 export default function Home() {
-  const [pdfText, setPdfText] = useState("");
+  const [bookText, setBookText] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDiscussing, setIsDiscussing] = useState(false);
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
@@ -46,9 +46,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-8">
-      <PDFDropZone onTextExtracted={setPdfText} />
+      <BookDropZone onTextExtracted={setBookText} />
 
-      {pdfText && (
+      {bookText && (
         <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
           <AudioProgress
             progress={(currentTimeSeconds / (6 * 60 * 60)) * 100}
@@ -69,11 +69,11 @@ export default function Home() {
         </div>
       )}
 
-      {/* {pdfText && (
+      {bookText && (
         <div className="w-full max-w-2xl p-4 border border-gray-300 rounded-xl overflow-auto">
-          <p className="text-gray-700 whitespace-pre-wrap">{pdfText}</p>
+          <p className="text-gray-700 whitespace-pre-wrap">{bookText}</p>
         </div>
-      )} */}
+      )}
     </div>
   );
 }
