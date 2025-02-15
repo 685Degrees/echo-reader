@@ -34,7 +34,7 @@ export function AudioControls({
         onClick={onPlayPause}
       >
         {isPlaying ? (
-          <Pause className="w-10 h-10 text-gray-700s" />
+          <Pause className="w-10 h-10 text-gray-700" />
         ) : (
           <Play className="w-10 h-10 text-gray-700 ml-1" />
         )}

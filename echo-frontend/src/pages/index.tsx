@@ -7,6 +7,27 @@ export default function Home() {
   const [pdfText, setPdfText] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isDiscussing, setIsDiscussing] = useState(false);
+
+  const handlePlayPauseClick = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleDiscussToggle = () => {
+    if (isDiscussing) {
+      setIsDiscussing(false);
+      setIsPlaying(true);
+    } else {
+      setIsDiscussing(true);
+      setIsPlaying(false);
+    }
+  };
+
+  const getButtonText = () => {
+    if (isDiscussing) return "Resume listening";
+    if (isPlaying) return "Pause & discuss";
+    return "Discuss";
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-8">
@@ -17,21 +38,15 @@ export default function Home() {
           <AudioProgress progress={progress} onChange={setProgress} />
           <AudioControls
             isPlaying={isPlaying}
-            onPlayPause={() => {
-              setIsPlaying(!isPlaying);
-              console.log("Play/Pause");
-            }}
+            onPlayPause={handlePlayPauseClick}
             onForward={() => console.log("Forward 30s")}
             onRewind={() => console.log("Rewind 30s")}
           />
           <button
-            onClick={() => {
-              setIsPlaying(false);
-              // Additional discussion logic can be added here
-            }}
+            onClick={handleDiscussToggle}
             className="w-full py-8 px-4 text-xl font-medium bg-black text-white rounded-2xl max-w-sm hover:bg-gray-700 transition duration-200"
           >
-            Pause & discuss
+            {getButtonText()}
           </button>
         </div>
       )}
