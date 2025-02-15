@@ -6,11 +6,26 @@ import { AudioControls } from "@/components/AudioControls";
 export default function Home() {
   const [pdfText, setPdfText] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [isDiscussing, setIsDiscussing] = useState(false);
+  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
 
   const handlePlayPauseClick = () => {
     setIsPlaying(!isPlaying);
+  };
+
+  const handleSkipForward = () => {
+    const newTime = Math.min(currentTimeSeconds + 30, 6 * 60 * 60); // Max 6 hours
+    setCurrentTimeSeconds(newTime);
+  };
+
+  const handleSkipBack = () => {
+    const newTime = Math.max(currentTimeSeconds - 30, 0); // Min 0 seconds
+    setCurrentTimeSeconds(newTime);
+  };
+
+  const handleProgressChange = (progressPercent: number) => {
+    const newTimeSeconds = Math.round((progressPercent / 100) * 6 * 60 * 60);
+    setCurrentTimeSeconds(newTimeSeconds);
   };
 
   const handleDiscussToggle = () => {
@@ -35,12 +50,15 @@ export default function Home() {
 
       {pdfText && (
         <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
-          <AudioProgress progress={progress} onChange={setProgress} />
+          <AudioProgress
+            progress={(currentTimeSeconds / (6 * 60 * 60)) * 100}
+            onChange={handleProgressChange}
+          />
           <AudioControls
             isPlaying={isPlaying}
             onPlayPause={handlePlayPauseClick}
-            onForward={() => console.log("Forward 30s")}
-            onRewind={() => console.log("Rewind 30s")}
+            onSkipForward={handleSkipForward}
+            onSkipBack={handleSkipBack}
           />
           <button
             onClick={handleDiscussToggle}

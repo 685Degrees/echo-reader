@@ -3,21 +3,21 @@ import { Play, Pause, RotateCw, RotateCcw } from "lucide-react";
 interface AudioControlsProps {
   isPlaying: boolean;
   onPlayPause: () => void;
-  onForward: () => void;
-  onRewind: () => void;
+  onSkipForward: () => void;
+  onSkipBack: () => void;
 }
 
 export function AudioControls({
   isPlaying,
   onPlayPause,
-  onForward,
-  onRewind,
+  onSkipForward,
+  onSkipBack,
 }: AudioControlsProps) {
   return (
     <div className="w-full flex items-center justify-center space-x-4 sm:space-x-8">
       <button
         className="group flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-colors"
-        onClick={onRewind}
+        onClick={onSkipBack}
       >
         <RotateCcw
           size={36}
@@ -47,7 +47,7 @@ export function AudioControls({
 
       <button
         className="group flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-colors"
-        onClick={onForward}
+        onClick={onSkipForward}
       >
         <RotateCw
           size={36}
