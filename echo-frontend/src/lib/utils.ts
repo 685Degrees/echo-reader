@@ -126,28 +126,34 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Process chunks with rate limiting
 async function processChunksWithRateLimit(chunks: string[]): Promise<string[]> {
-  const results: string[] = [];
   const CONCURRENT_REQUESTS = 3; // Process 3 chunks at a time
   const DELAY_BETWEEN_BATCHES = 500; // 0.5 second delay between batches
 
-  // Process chunks in batches
-  for (let i = 0; i < chunks.length; i += CONCURRENT_REQUESTS) {
-    const batch = chunks.slice(i, i + CONCURRENT_REQUESTS);
-    const batchPromises = batch.map((chunk) => cleanTextChunk(chunk));
+  // Create array of promises for all batches
+  const batchPromises = chunks.reduce((promises, _, index) => {
+    if (index % CONCURRENT_REQUESTS === 0) {
+      const batchStart = index;
+      const batchEnd = Math.min(index + CONCURRENT_REQUESTS, chunks.length);
+      const batch = chunks.slice(batchStart, batchEnd);
 
-    console.log("Processing chunk:", i);
+      // Schedule this batch to start after appropriate delay
+      const batchPromise = delay(
+        Math.floor(index / CONCURRENT_REQUESTS) * DELAY_BETWEEN_BATCHES
+      ).then(() => {
+        console.log("Processing batch:", batchStart);
+        return Promise.all(batch.map((chunk) => cleanTextChunk(chunk)));
+      });
 
-    // Process current batch
-    const batchResults = await Promise.all(batchPromises);
-    results.push(...batchResults);
-
-    // Add delay before next batch (unless it's the last batch)
-    if (i + CONCURRENT_REQUESTS < chunks.length) {
-      await delay(DELAY_BETWEEN_BATCHES);
+      promises.push(batchPromise);
     }
-  }
+    return promises;
+  }, [] as Promise<string[]>[]);
 
-  return results;
+  // Wait for all batches to complete in order
+  const batchResults = await Promise.all(batchPromises);
+
+  // Flatten results while preserving order
+  return batchResults.flat();
 }
 
 async function cleanTextChunk(chunk: string): Promise<string> {
