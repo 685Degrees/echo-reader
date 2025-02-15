@@ -13,7 +13,7 @@ const genAI = new GoogleGenerativeAI(
 const modelName = "gemini-2.0-flash";
 const generationConfig = {
   temperature: 0,
-  max_output_tokens: 4096,
+  max_output_tokens: 100000,
   response_mime_type: "text/plain",
 };
 
