@@ -2,10 +2,13 @@ import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { DocumentPlusIcon } from "@heroicons/react/24/outline";
 import { Subheader2, Paragraph, SmallText } from "@/components/Typography";
+// @ts-ignore: react-pdftotext module has no type declarations
+import pdfToText from "react-pdftotext";
 
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [pdfText, setPdfText] = useState("");
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -25,6 +28,17 @@ export default function Home() {
     setIsDragging(false);
   }, []);
 
+  const extractTextFromPdf = (file: File) => {
+    pdfToText(file)
+      .then((text: string) => {
+        setPdfText(text);
+        console.log("Extracted text:", text);
+      })
+      .catch((error: any) => {
+        console.error("Failed to extract text from pdf", error);
+      });
+  };
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -37,7 +51,7 @@ export default function Home() {
         return;
       }
       setSelectedFile(files[0].name);
-      // Handle the PDF file here
+      extractTextFromPdf(files[0]);
       console.log("Dropped PDF:", files[0]);
     }
   }, []);
@@ -51,14 +65,14 @@ export default function Home() {
           return;
         }
         setSelectedFile(file.name);
-        // Handle the PDF file here
+        extractTextFromPdf(file);
         console.log("Selected PDF:", file);
       }
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-4">
       <div
         className={cn(
           "w-full max-w-2xl aspect-video border-2 border-dashed rounded-lg",
@@ -109,6 +123,11 @@ export default function Home() {
           </div>
         )}
       </div>
+      {pdfText && (
+        <div className="w-full max-w-2xl p-4 border border-gray-300 rounded-xl overflow-auto">
+          <p className="text-gray-700 whitespace-pre-wrap">{pdfText}</p>
+        </div>
+      )}
     </div>
   );
 }
