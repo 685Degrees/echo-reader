@@ -11,6 +11,9 @@ export default function Home() {
   const [pdfText, setPdfText] = useState("");
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
   const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0); // 0 to 100
+  const [currentTime, setCurrentTime] = useState("01:05");
+  const [remainingTime, setRemainingTime] = useState("15:49");
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -72,6 +75,15 @@ export default function Home() {
     }
   };
 
+  const formatTimeRemaining = (progress: number) => {
+    // Calculate time based on progress (assuming 6 hours total)
+    const totalMinutes = 360; // 6 hours
+    const remainingMinutes = Math.round(totalMinutes * (1 - progress / 100));
+    const hours = Math.floor(remainingMinutes / 60);
+    const minutes = remainingMinutes % 60;
+    return `${hours}h ${minutes}m left`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-8">
       <div
@@ -124,47 +136,79 @@ export default function Home() {
           </div>
         )}
       </div>
-      <div className="w-full max-w-2xl flex items-center justify-center space-x-8">
-        <button
-          className="group flex items-center justify-center w-12 h-12 rounded-full transition-colors"
-          onClick={() => console.log("Forward 30s")}
-        >
-          <RotateCcw
-            size={48}
-            strokeWidth={1.25}
-            className="text-gray-500 group-hover:text-gray-600"
-          />
-          <span className="absolute text-xs mb-[30px] font-medium text-gray-500 group-hover:text-gray-600 mt-8">
-            30
-          </span>
-        </button>
-        <button
-          className="flex items-center justify-center w-16 h-16 rounded-full bg-black hover:bg-gray-700 transition-colors"
-          onClick={() => {
-            setIsPlaying(!isPlaying);
-            console.log("Play/Pause");
-          }}
-        >
-          {isPlaying ? (
-            <Pause className="w-8 h-8 text-white" />
-          ) : (
-            <Play className="w-8 h-8 text-white ml-1" />
-          )}
-        </button>
+      <div className="w-full max-w-2xl space-y-12">
+        {/* Audio Progress Section */}
+        <div className="w-full space-y-2">
+          {/* Progress Bar */}
+          <div className="relative w-full h-2 bg-gray-200 rounded-full">
+            <div
+              className="absolute left-0 top-0 h-full bg-gray-800 rounded-full"
+              style={{ width: `${progress}%` }}
+            />
+            {/* Thumb slider */}
+            <div
+              className="absolute h-4 w-4 bg-black rounded-full -mt-1 -ml-1.5"
+              style={{ left: `${progress}%` }}
+            />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={progress}
+              onChange={(e) => setProgress(Number(e.target.value))}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </div>
 
-        <button
-          className="group flex items-center justify-center w-12 h-12 rounded-full transition-colors"
-          onClick={() => console.log("Forward 30s")}
-        >
-          <RotateCw
-            size={48}
-            strokeWidth={1.25}
-            className="text-gray-500 group-hover:text-gray-600"
-          />
-          <span className="absolute text-xs mb-[30px] font-medium text-gray-500 group-hover:text-gray-600 mt-8">
-            30
-          </span>
-        </button>
+          {/* Time Display */}
+          <div className="flex justify-center text-sm text-gray-500">
+            <span>{formatTimeRemaining(progress)}</span>
+          </div>
+        </div>
+
+        {/* Existing Playback Controls */}
+        <div className="w-full flex items-center justify-center space-x-8">
+          <button
+            className="group flex items-center justify-center w-12 h-12 rounded-full transition-colors"
+            onClick={() => console.log("Forward 30s")}
+          >
+            <RotateCcw
+              size={48}
+              strokeWidth={1.25}
+              className="text-gray-500 group-hover:text-gray-600"
+            />
+            <span className="absolute text-xs mb-[30px] font-medium text-gray-500 group-hover:text-gray-600 mt-8">
+              30
+            </span>
+          </button>
+          <button
+            className="flex items-center justify-center w-16 h-16 rounded-full bg-black hover:bg-gray-700 transition-colors"
+            onClick={() => {
+              setIsPlaying(!isPlaying);
+              console.log("Play/Pause");
+            }}
+          >
+            {isPlaying ? (
+              <Pause className="w-8 h-8 text-white" />
+            ) : (
+              <Play className="w-8 h-8 text-white ml-1" />
+            )}
+          </button>
+
+          <button
+            className="group flex items-center justify-center w-12 h-12 rounded-full transition-colors"
+            onClick={() => console.log("Forward 30s")}
+          >
+            <RotateCw
+              size={48}
+              strokeWidth={1.25}
+              className="text-gray-500 group-hover:text-gray-600"
+            />
+            <span className="absolute text-xs mb-[30px] font-medium text-gray-500 group-hover:text-gray-600 mt-8">
+              30
+            </span>
+          </button>
+        </div>
       </div>
       {/* {pdfText && (
         <div className="w-full max-w-2xl p-4 border border-gray-300 rounded-xl overflow-auto">
