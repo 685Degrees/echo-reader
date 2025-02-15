@@ -18,6 +18,7 @@ export default function Home() {
     isLoading,
     currentTimeSeconds,
     duration,
+    bufferingProgress,
     handlePlayPause,
     handleSkipForward,
     handleSkipBack,
@@ -61,6 +62,7 @@ export default function Home() {
         <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
           <AudioProgress
             progress={(currentTimeSeconds / (duration || 1)) * 100}
+            bufferingProgress={bufferingProgress}
             duration={duration}
             currentTime={currentTimeSeconds}
             onChange={handleProgressChange}

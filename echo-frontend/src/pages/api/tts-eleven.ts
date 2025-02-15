@@ -1,4 +1,13 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { ElevenLabsClient } from "elevenlabs";
+
+if (!process.env.ELEVENLABS_API_KEY) {
+  throw new Error("Missing ELEVENLABS_API_KEY environment variable");
+}
+
+const client = new ElevenLabsClient({
+  apiKey: process.env.ELEVENLABS_API_KEY,
+});
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,61 +24,30 @@ export default async function handler(
       return res.status(400).json({ error: "Text is required" });
     }
 
-    const ELEVEN_LABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-    const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "21m00Tcm4TlvDq8ikWAM"; // Default voice ID
-
-    // Log the request details
-    console.log("Making ElevenLabs API request:", {
-      voiceId: VOICE_ID,
-      apiKeyExists: !!ELEVEN_LABS_API_KEY,
-      textLength: text.length,
-      requestBody: {
-        text: text.substring(0, 100) + "...", // Log just the start of the text
-        model_id: "eleven_monolingual_v1",
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.5,
-        },
-      },
+    // Generate audio stream using the ElevenLabs client
+    const audioStream = await client.generate({
+      voice: "Rachel",
+      model_id: "eleven_turbo_v2_5",
+      text,
     });
 
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}?output_format=mp3_44100_128`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "audio/mpeg",
-          "Content-Type": "application/json",
-          "xi-api-key": ELEVEN_LABS_API_KEY!,
-        },
-        body: JSON.stringify({
-          text,
-          model_id: "eleven_monolingual_v1",
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.5,
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("ElevenLabs API error details:", {
-        status: response.status,
-        statusText: response.statusText,
-        errorData,
-      });
-      throw new Error(`ElevenLabs API error: ${response.statusText}`);
-    }
-
-    const audioBuffer = await response.arrayBuffer();
-
+    // Set headers for streaming
     res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Cache-Control", "no-cache");
-    res.send(Buffer.from(audioBuffer));
+    res.setHeader("Transfer-Encoding", "chunked");
+
+    // Pipe the audio stream directly to the response
+    audioStream.pipe(res);
+
+    // Handle any errors that occur during streaming
+    audioStream.on("error", (error) => {
+      console.error("Streaming error:", error);
+      // Only send error if headers haven't been sent
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Streaming failed" });
+      }
+    });
   } catch (error) {
-    console.error("TTS Error:", error);
-    return res.status(500).json({ error: "Failed to convert text to speech" });
+    console.error("Error:", error);
+    res.status(500).json({ error: "Failed to generate speech" });
   }
 }
