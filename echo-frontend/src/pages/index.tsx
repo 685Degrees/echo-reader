@@ -2,46 +2,32 @@ import { useState } from "react";
 import { BookDropZone } from "@/components/BookDropZone";
 import { AudioProgress } from "@/components/AudioProgress";
 import { AudioControls } from "@/components/AudioControls";
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 
 export default function Home() {
   const [bookText, setBookText] = useState("");
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isDiscussing, setIsDiscussing] = useState(false);
-  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
 
-  const handlePlayPauseClick = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleSkipForward = () => {
-    const newTime = Math.min(currentTimeSeconds + 30, 6 * 60 * 60); // Max 6 hours
-    setCurrentTimeSeconds(newTime);
-  };
-
-  const handleSkipBack = () => {
-    const newTime = Math.max(currentTimeSeconds - 30, 0); // Min 0 seconds
-    setCurrentTimeSeconds(newTime);
-  };
-
-  const handleProgressChange = (progressPercent: number) => {
-    const newTimeSeconds = Math.round((progressPercent / 100) * 6 * 60 * 60);
-    setCurrentTimeSeconds(newTimeSeconds);
-  };
+  // Use the audio player hook for actual audio playback
+  const {
+    isPlaying,
+    currentTimeSeconds,
+    handlePlayPause,
+    handleSkipForward,
+    handleSkipBack,
+    handleProgressChange,
+  } = useAudioPlayer(bookText);
 
   const handleDiscussToggle = () => {
     if (isDiscussing) {
       setIsDiscussing(false);
-      setIsPlaying(true);
     } else {
       setIsDiscussing(true);
-      setIsPlaying(false);
+      // Pause audio when starting discussion
+      if (isPlaying) {
+        handlePlayPause();
+      }
     }
-  };
-
-  const getButtonText = () => {
-    if (isDiscussing) return "Resume listening";
-    if (isPlaying) return "Pause & discuss";
-    return "Discuss";
   };
 
   return (
@@ -56,7 +42,7 @@ export default function Home() {
           />
           <AudioControls
             isPlaying={isPlaying}
-            onPlayPause={handlePlayPauseClick}
+            onPlayPause={handlePlayPause}
             onSkipForward={handleSkipForward}
             onSkipBack={handleSkipBack}
           />
@@ -64,7 +50,7 @@ export default function Home() {
             onClick={handleDiscussToggle}
             className="w-full py-6 sm:py-8 px-4 text-lg sm:text-xl font-medium bg-black text-white rounded-2xl max-w-sm hover:bg-gray-700 transition duration-200"
           >
-            {getButtonText()}
+            {isDiscussing ? "Return to listening" : "Discuss"}
           </button>
         </div>
       )}

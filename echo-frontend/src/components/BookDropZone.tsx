@@ -2,8 +2,6 @@ import { useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { FileUp } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
-// @ts-ignore: react-pdftotext module has no type declarations
-import pdfToText from "react-pdftotext";
 import ePub from "epubjs";
 import { ScrollMode, Viewer } from "@react-pdf-viewer/core";
 import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail";
@@ -38,15 +36,16 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
     setIsDragging(false);
   }, []);
 
-  const extractTextFromPdf = (file: File) => {
-    pdfToText(file)
-      .then((text: string) => {
-        onTextExtracted(text);
-        console.log("Extracted text from PDF:", text);
-      })
-      .catch((error: any) => {
-        console.error("Failed to extract text from PDF", error);
-      });
+  const extractTextFromPdf = async (file: File) => {
+    try {
+      // Dynamically import react-pdftotext
+      const pdfToText = (await import('react-pdftotext')).default;
+      const text = await pdfToText(file);
+      onTextExtracted(text);
+      console.log("Extracted text from PDF:", text);
+    } catch (error) {
+      console.error("Failed to extract text from PDF", error);
+    }
   };
 
   const extractTextFromEpub = async (file: File) => {
