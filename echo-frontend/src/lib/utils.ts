@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(
   process.env.NEXT_PUBLIC_GEMINI_API_KEY || ""
 );
 
-const modelName = "gemini-2.0-flash";
+const modelName = "gemini-2.0-flash-lite-preview-02-05";
 const generationConfig = {
   temperature: 0,
   max_output_tokens: 100000,
