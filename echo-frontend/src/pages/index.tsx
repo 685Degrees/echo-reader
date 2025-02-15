@@ -68,12 +68,12 @@ export default function Home() {
           </button>
         </div>
       )}
-
+      {/* 
       {bookText && (
         <div className="w-full max-w-2xl p-4 border border-gray-300 rounded-xl overflow-auto">
           <p className="text-gray-700 whitespace-pre-wrap">{bookText}</p>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
