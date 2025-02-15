@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@heroicons/react": "^2.2.0",
     "clsx": "^2.1.1",
     "epubjs": "^0.3.93",
