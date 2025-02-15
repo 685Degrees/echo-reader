@@ -9,9 +9,8 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDiscussing, setIsDiscussing] = useState(false);
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
-  const [message, setMessage] = useState("");
 
-  const { isConnected, isConnecting, startSession, sendMessage, error } =
+  const { isConnected, isConnecting, startSession, stopSession, error } =
     useWebRTC();
 
   const handlePlayPauseClick = () => {
@@ -37,19 +36,13 @@ export default function Home() {
     if (isDiscussing) {
       setIsDiscussing(false);
       setIsPlaying(true);
+      stopSession();
     } else {
       setIsDiscussing(true);
       setIsPlaying(false);
       if (!isConnected && !isConnecting) {
         await startSession();
       }
-    }
-  };
-
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      sendMessage(message);
-      setMessage("");
     }
   };
 
@@ -84,27 +77,8 @@ export default function Home() {
             {getButtonText()}
           </button>
 
-          {isDiscussing && (
-            <div className="w-full max-w-2xl space-y-4">
-              {error && <div className="text-red-500 text-sm">{error}</div>}
-              <div className="flex space-x-4">
-                <input
-                  type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Type your message..."
-                  className="flex-1 p-4 border border-gray-300 rounded-xl"
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!isConnected || !message.trim()}
-                  className="px-6 py-4 bg-black text-white rounded-xl hover:bg-gray-700 transition duration-200 disabled:bg-gray-400"
-                >
-                  Send
-                </button>
-              </div>
-            </div>
+          {isDiscussing && error && (
+            <div className="text-red-500 text-sm">{error}</div>
           )}
         </div>
       )}
