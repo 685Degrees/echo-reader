@@ -37,8 +37,8 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
     try {
       setIsProcessing(true);
       const text = await pdfToText(file);
-      console.log("Text:", text.slice(0, 1000));
-      const cleanedText = await cleanTextWithGemini(text.slice(0, 1000));
+      // console.log("Text:", text.slice(0, 1000));
+      const cleanedText = await cleanTextWithGemini(text);
       console.log("Cleaned text:", cleanedText);
       onTextExtracted(cleanedText);
       console.log("Extracted and cleaned text from PDF");
