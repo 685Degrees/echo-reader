@@ -12,6 +12,7 @@ export default function Home() {
     isPlaying,
     isLoading,
     currentTimeSeconds,
+    duration,
     handlePlayPause,
     handleSkipForward,
     handleSkipBack,
@@ -43,7 +44,9 @@ export default function Home() {
       {bookText && (
         <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
           <AudioProgress
-            progress={(currentTimeSeconds / (6 * 60 * 60)) * 100}
+            progress={(currentTimeSeconds / (duration || 1)) * 100}
+            duration={duration}
+            currentTime={currentTimeSeconds}
             onChange={handleProgressChange}
           />
           <AudioControls

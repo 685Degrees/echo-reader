@@ -4,6 +4,7 @@ export function useAudioPlayer(text: string) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
+  const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Prepare audio when text changes
@@ -30,6 +31,9 @@ export function useAudioPlayer(text: string) {
         newAudio.onended = () => setIsPlaying(false);
         newAudio.ontimeupdate = () => {
           setCurrentTimeSeconds(newAudio.currentTime);
+        };
+        newAudio.onloadedmetadata = () => {
+          setDuration(newAudio.duration);
         };
 
         audioRef.current = newAudio;
@@ -90,9 +94,18 @@ export function useAudioPlayer(text: string) {
 
   const handleProgressChange = (progressPercent: number) => {
     if (audioRef.current) {
+      const wasPlaying = !audioRef.current.paused;
+      if (wasPlaying) {
+        audioRef.current.pause();
+      }
+
       const newTime = (progressPercent / 100) * audioRef.current.duration;
       audioRef.current.currentTime = newTime;
       setCurrentTimeSeconds(newTime);
+
+      if (wasPlaying) {
+        audioRef.current.play();
+      }
     }
   };
 
@@ -100,6 +113,7 @@ export function useAudioPlayer(text: string) {
     isPlaying,
     isLoading,
     currentTimeSeconds,
+    duration,
     handlePlayPause,
     handleSkipForward,
     handleSkipBack,
