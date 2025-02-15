@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { DocumentPlusIcon } from "@heroicons/react/24/outline";
+import { FileUp, RotateCcw, RotateCw, Play, Pause } from "lucide-react";
 import { Subheader2, Paragraph, SmallText } from "@/components/Typography";
 // @ts-ignore: react-pdftotext module has no type declarations
 import pdfToText from "react-pdftotext";
@@ -10,6 +10,7 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [pdfText, setPdfText] = useState("");
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -72,7 +73,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-8">
       <div
         className={cn(
           "w-full max-w-2xl aspect-video border-2 border-dashed rounded-lg",
@@ -96,7 +97,7 @@ export default function Home() {
           onChange={handleFileSelect}
         />
 
-        <DocumentPlusIcon
+        <FileUp
           className={cn(
             "w-12 h-12 mb-4",
             isDragging ? "text-blue-500" : "text-gray-400"
@@ -123,11 +124,53 @@ export default function Home() {
           </div>
         )}
       </div>
-      {pdfText && (
+      <div className="w-full max-w-2xl flex items-center justify-center space-x-8">
+        <button
+          className="group flex items-center justify-center w-12 h-12 rounded-full transition-colors"
+          onClick={() => console.log("Forward 30s")}
+        >
+          <RotateCcw
+            size={48}
+            strokeWidth={1.25}
+            className="text-gray-500 group-hover:text-gray-600"
+          />
+          <span className="absolute text-xs mb-[30px] font-medium text-gray-500 group-hover:text-gray-600 mt-8">
+            30
+          </span>
+        </button>
+        <button
+          className="flex items-center justify-center w-16 h-16 rounded-full bg-black hover:bg-gray-700 transition-colors"
+          onClick={() => {
+            setIsPlaying(!isPlaying);
+            console.log("Play/Pause");
+          }}
+        >
+          {isPlaying ? (
+            <Pause className="w-8 h-8 text-white" />
+          ) : (
+            <Play className="w-8 h-8 text-white ml-1" />
+          )}
+        </button>
+
+        <button
+          className="group flex items-center justify-center w-12 h-12 rounded-full transition-colors"
+          onClick={() => console.log("Forward 30s")}
+        >
+          <RotateCw
+            size={48}
+            strokeWidth={1.25}
+            className="text-gray-500 group-hover:text-gray-600"
+          />
+          <span className="absolute text-xs mb-[30px] font-medium text-gray-500 group-hover:text-gray-600 mt-8">
+            30
+          </span>
+        </button>
+      </div>
+      {/* {pdfText && (
         <div className="w-full max-w-2xl p-4 border border-gray-300 rounded-xl overflow-auto">
           <p className="text-gray-700 whitespace-pre-wrap">{pdfText}</p>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
