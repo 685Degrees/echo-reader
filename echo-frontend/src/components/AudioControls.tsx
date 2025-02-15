@@ -24,7 +24,7 @@ export function AudioControls({
           strokeWidth={1.25}
           className="text-gray-500 group-hover:text-gray-600"
         />
-        <span className="absolute text-xs mb-[30px] font-medium text-gray-500 group-hover:text-gray-600 mt-8">
+        <span className="absolute text-xs mb-[30px] font-bold text-gray-500 group-hover:text-gray-600 mt-8">
           30
         </span>
       </button>
@@ -49,7 +49,7 @@ export function AudioControls({
           strokeWidth={1.25}
           className="text-gray-500 group-hover:text-gray-600"
         />
-        <span className="absolute text-xs mb-[30px] font-medium text-gray-500 group-hover:text-gray-600 mt-8">
+        <span className="absolute text-xs mb-[30px] font-bold text-gray-500 group-hover:text-gray-600 mt-8">
           30
         </span>
       </button>
