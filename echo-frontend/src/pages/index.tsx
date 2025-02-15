@@ -34,7 +34,7 @@ export default function Home() {
       <PDFDropZone onTextExtracted={setPdfText} />
 
       {pdfText && (
-        <div className="w-full max-w-2xl space-y-12 flex flex-col items-center justify-center">
+        <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
           <AudioProgress progress={progress} onChange={setProgress} />
           <AudioControls
             isPlaying={isPlaying}
@@ -44,7 +44,7 @@ export default function Home() {
           />
           <button
             onClick={handleDiscussToggle}
-            className="w-full py-8 px-4 text-xl font-medium bg-black text-white rounded-2xl max-w-sm hover:bg-gray-700 transition duration-200"
+            className="w-full py-6 sm:py-8 px-4 text-lg sm:text-xl font-medium bg-black text-white rounded-2xl max-w-sm hover:bg-gray-700 transition duration-200"
           >
             {getButtonText()}
           </button>
