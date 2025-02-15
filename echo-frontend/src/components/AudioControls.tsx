@@ -30,13 +30,13 @@ export function AudioControls({
       </button>
 
       <button
-        className="flex items-center justify-center w-16 h-16 rounded-full bg-black hover:bg-gray-700 transition-colors"
+        className="flex items-center justify-center w-20 h-20 rounded-full bg-white hover:bg-gray-100 transition-colors shadow-[0_3px_20px_-3px_rgba(0,0,0,0.2)]"
         onClick={onPlayPause}
       >
         {isPlaying ? (
-          <Pause className="w-8 h-8 text-white" />
+          <Pause className="w-10 h-10 text-gray-700s" />
         ) : (
-          <Play className="w-8 h-8 text-white ml-1" />
+          <Play className="w-10 h-10 text-gray-700 ml-1" />
         )}
       </button>
 

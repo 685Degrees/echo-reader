@@ -12,18 +12,29 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-8">
       <PDFDropZone onTextExtracted={setPdfText} />
 
-      <div className="w-full max-w-2xl space-y-12">
-        <AudioProgress progress={progress} onChange={setProgress} />
-        <AudioControls
-          isPlaying={isPlaying}
-          onPlayPause={() => {
-            setIsPlaying(!isPlaying);
-            console.log("Play/Pause");
-          }}
-          onForward={() => console.log("Forward 30s")}
-          onRewind={() => console.log("Rewind 30s")}
-        />
-      </div>
+      {pdfText && (
+        <div className="w-full max-w-2xl space-y-12 flex flex-col items-center justify-center">
+          <AudioProgress progress={progress} onChange={setProgress} />
+          <AudioControls
+            isPlaying={isPlaying}
+            onPlayPause={() => {
+              setIsPlaying(!isPlaying);
+              console.log("Play/Pause");
+            }}
+            onForward={() => console.log("Forward 30s")}
+            onRewind={() => console.log("Rewind 30s")}
+          />
+          <button
+            onClick={() => {
+              setIsPlaying(false);
+              // Additional discussion logic can be added here
+            }}
+            className="w-full py-8 px-4 text-xl font-medium bg-black text-white rounded-2xl max-w-sm hover:bg-gray-700 transition duration-200"
+          >
+            Pause & discuss
+          </button>
+        </div>
+      )}
 
       {/* {pdfText && (
         <div className="w-full max-w-2xl p-4 border border-gray-300 rounded-xl overflow-auto">
