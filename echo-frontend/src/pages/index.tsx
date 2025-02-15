@@ -8,9 +8,9 @@ export default function Home() {
   const [bookText, setBookText] = useState("");
   const [isDiscussing, setIsDiscussing] = useState(false);
 
-  // Use the audio player hook for actual audio playback
   const {
     isPlaying,
+    isLoading,
     currentTimeSeconds,
     handlePlayPause,
     handleSkipForward,
@@ -30,6 +30,12 @@ export default function Home() {
     }
   };
 
+  const getButtonText = () => {
+    if (isDiscussing) return "Resume listening";
+    if (isPlaying) return "Pause & discuss";
+    return "Discuss";
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 space-y-8">
       <BookDropZone onTextExtracted={setBookText} />
@@ -42,6 +48,7 @@ export default function Home() {
           />
           <AudioControls
             isPlaying={isPlaying}
+            isLoading={isLoading}
             onPlayPause={handlePlayPause}
             onSkipForward={handleSkipForward}
             onSkipBack={handleSkipBack}
@@ -50,7 +57,7 @@ export default function Home() {
             onClick={handleDiscussToggle}
             className="w-full py-6 sm:py-8 px-4 text-lg sm:text-xl font-medium bg-black text-white rounded-2xl max-w-sm hover:bg-gray-700 transition duration-200"
           >
-            {isDiscussing ? "Return to listening" : "Discuss"}
+            {getButtonText()}
           </button>
         </div>
       )}

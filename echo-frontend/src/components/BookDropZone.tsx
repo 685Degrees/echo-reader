@@ -39,7 +39,7 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
   const extractTextFromPdf = async (file: File) => {
     try {
       // Dynamically import react-pdftotext
-      const pdfToText = (await import('react-pdftotext')).default;
+      const pdfToText = (await import("react-pdftotext")).default;
       const text = await pdfToText(file);
       onTextExtracted(text);
       console.log("Extracted text from PDF:", text);

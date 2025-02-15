@@ -2,24 +2,17 @@ import { useState, useRef, useEffect } from "react";
 
 export function useAudioPlayer(text: string) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Prepare audio when text changes
   useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        URL.revokeObjectURL(audioRef.current.src);
-      }
-    };
-  }, []);
+    const prepareAudio = async () => {
+      if (!text || audioRef.current) return;
 
-  const handlePlayPause = async () => {
-    if (!text) return;
-
-    try {
-      if (!audioRef.current) {
-        // First time playing - fetch audio from API
+      setIsLoading(true);
+      try {
         const response = await fetch("/api/tts-eleven", {
           method: "POST",
           headers: {
@@ -40,16 +33,36 @@ export function useAudioPlayer(text: string) {
         };
 
         audioRef.current = newAudio;
-        await newAudio.play();
-        setIsPlaying(true);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error preparing audio:", error);
+        setIsLoading(false);
+      }
+    };
+
+    prepareAudio();
+  }, [text]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+    };
+  }, []);
+
+  const handlePlayPause = async () => {
+    if (!text || !audioRef.current || isLoading) return;
+
+    try {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
       } else {
-        if (isPlaying) {
-          audioRef.current.pause();
-          setIsPlaying(false);
-        } else {
-          await audioRef.current.play();
-          setIsPlaying(true);
-        }
+        await audioRef.current.play();
+        setIsPlaying(true);
       }
     } catch (error) {
       console.error("Error playing audio:", error);
@@ -85,6 +98,7 @@ export function useAudioPlayer(text: string) {
 
   return {
     isPlaying,
+    isLoading,
     currentTimeSeconds,
     handlePlayPause,
     handleSkipForward,
