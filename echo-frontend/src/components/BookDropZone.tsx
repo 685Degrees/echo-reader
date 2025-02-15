@@ -1,14 +1,10 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { FileUp } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 // @ts-ignore: react-pdftotext module has no type declarations
 import pdfToText from "react-pdftotext";
 import ePub from "epubjs";
-import { ScrollMode, Viewer } from "@react-pdf-viewer/core";
-import { thumbnailPlugin } from "@react-pdf-viewer/thumbnail";
-import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/thumbnail/lib/styles/index.css";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
@@ -17,9 +13,7 @@ interface BookDropZoneProps {
 export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
-  const thumbnailPluginInstance = thumbnailPlugin();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -98,14 +92,12 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
 
         if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
           setSelectedFile(file.name);
-          setPdfUrl(URL.createObjectURL(file));
           extractTextFromPdf(file);
         } else if (
           file.type === "application/epub+zip" ||
           file.name.endsWith(".epub")
         ) {
           setSelectedFile(file.name);
-          setPdfUrl(null);
           extractTextFromEpub(file);
         } else {
           alert("Please upload a PDF or EPUB file");
@@ -125,14 +117,12 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
 
       if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
         setSelectedFile(file.name);
-        setPdfUrl(URL.createObjectURL(file));
         extractTextFromPdf(file);
       } else if (
         file.type === "application/epub+zip" ||
         file.name.endsWith(".epub")
       ) {
         setSelectedFile(file.name);
-        setPdfUrl(null);
         extractTextFromEpub(file);
       } else {
         alert("Please upload a PDF or EPUB file");
@@ -140,22 +130,14 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) {
-        URL.revokeObjectURL(pdfUrl);
-      }
-    };
-  }, [pdfUrl]);
-
   return (
     <div
       className={cn(
         "w-full max-w-2xl aspect-video border-2 border-dashed rounded-lg",
         "flex flex-col items-center justify-center p-8",
-        "hover:border-gray-400",
+        "hover:bg-gray-50",
         "transition-colors duration-200",
-        isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300",
+        isDragging ? "border-blue-500 bg-blue-50" : "border-gray-400",
         "cursor-pointer"
       )}
       onDragEnter={handleDragIn}
@@ -172,44 +154,29 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
         onChange={handleFileSelect}
       />
 
-      {pdfUrl ? (
-        <div className="w-full h-full overflow-hidden">
-          <Viewer
-            fileUrl={pdfUrl}
-            plugins={[thumbnailPluginInstance]}
-            defaultScale={0.35}
-            scrollMode={ScrollMode.Page}
-          />
+      <FileUp
+        className={cn(
+          "w-12 h-12 mb-4",
+          isDragging ? "text-blue-500" : "text-gray-400"
+        )}
+      />
+
+      {selectedFile ? (
+        <div className="text-center">
+          <Subheader2 className="mb-2 text-gray-700">{selectedFile}</Subheader2>
+          <Paragraph className="text-gray-500">
+            Click or drop to change file
+          </Paragraph>
         </div>
       ) : (
-        <>
-          <FileUp
-            className={cn(
-              "w-12 h-12 mb-4",
-              isDragging ? "text-blue-500" : "text-gray-400"
-            )}
-          />
-
-          {selectedFile ? (
-            <div className="text-center">
-              <Subheader2 className="mb-2 text-gray-700">
-                {selectedFile}
-              </Subheader2>
-              <Paragraph className="text-gray-500">
-                Click or drop to change file
-              </Paragraph>
-            </div>
-          ) : (
-            <div className="text-center">
-              <Subheader2 className="mb-2 text-gray-700">
-                Drop your book here
-              </Subheader2>
-              <Paragraph className="text-gray-500">
-                Supports PDF and EPUB formats • Maximum file size: 10MB
-              </Paragraph>
-            </div>
-          )}
-        </>
+        <div className="text-center">
+          <Subheader2 className="mb-2 text-gray-700">
+            Drop your book here
+          </Subheader2>
+          <Paragraph className="text-gray-500">
+            Supports PDF and EPUB formats • Maximum file size: 10MB
+          </Paragraph>
+        </div>
       )}
     </div>
   );
