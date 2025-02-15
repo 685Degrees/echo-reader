@@ -1,8 +1,11 @@
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { DocumentPlusIcon } from "@heroicons/react/24/outline";
 
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -28,6 +31,11 @@ export default function Home() {
 
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0 && files[0].type === "application/pdf") {
+      if (files[0].size > MAX_FILE_SIZE) {
+        alert("File size exceeds 10MB limit");
+        return;
+      }
+      setSelectedFile(files[0].name);
       // Handle the PDF file here
       console.log("Dropped PDF:", files[0]);
     }
@@ -37,6 +45,11 @@ export default function Home() {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       if (file.type === "application/pdf") {
+        if (file.size > MAX_FILE_SIZE) {
+          alert("File size exceeds 10MB limit");
+          return;
+        }
+        setSelectedFile(file.name);
         // Handle the PDF file here
         console.log("Selected PDF:", file);
       }
@@ -49,10 +62,9 @@ export default function Home() {
         className={cn(
           "w-full max-w-2xl aspect-video border-2 border-dashed rounded-lg",
           "flex flex-col items-center justify-center p-8",
+          "hover:bg-gray-50 ",
           "transition-colors duration-200",
-          isDragging
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-950"
-            : "border-gray-300 dark:border-gray-700",
+          isDragging ? "border-blue-500 bg-blue-50 " : "border-gray-400",
           "cursor-pointer"
         )}
         onDragEnter={handleDragIn}
@@ -69,28 +81,28 @@ export default function Home() {
           onChange={handleFileSelect}
         />
 
-        <svg
+        <DocumentPlusIcon
           className={cn(
             "w-12 h-12 mb-4",
             isDragging ? "text-blue-500" : "text-gray-400"
           )}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
+        />
 
-        <p className="text-lg mb-2">Drop your PDF here or click to select</p>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Only PDF files are accepted
-        </p>
+        {selectedFile ? (
+          <div className="text-center">
+            <p className="text-lg mb-2 text-gray-700">{selectedFile}</p>
+            <p className="text-sm text-gray-500">
+              Click or drop to change file
+            </p>
+          </div>
+        ) : (
+          <div className="text-center">
+            <p className="text-lg mb-2 text-gray-700">
+              Drop your PDF of your book here
+            </p>
+            <p className="text-sm text-gray-500">Maximum file size: 10MB</p>
+          </div>
+        )}
       </div>
     </div>
   );
