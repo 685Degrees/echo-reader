@@ -2,6 +2,7 @@ import { Play, Pause, RotateCw, RotateCcw } from "lucide-react";
 
 interface AudioControlsProps {
   isPlaying: boolean;
+  isLoading: boolean;
   onPlayPause: () => void;
   onSkipForward: () => void;
   onSkipBack: () => void;
@@ -9,6 +10,7 @@ interface AudioControlsProps {
 
 export function AudioControls({
   isPlaying,
+  isLoading,
   onPlayPause,
   onSkipForward,
   onSkipBack,
@@ -18,6 +20,7 @@ export function AudioControls({
       <button
         className="group flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-colors"
         onClick={onSkipBack}
+        disabled={isLoading}
       >
         <RotateCcw
           size={36}
@@ -37,8 +40,11 @@ export function AudioControls({
       <button
         className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white hover:bg-gray-100 transition-colors shadow-[0_3px_20px_-3px_rgba(0,0,0,0.2)]"
         onClick={onPlayPause}
+        disabled={isLoading}
       >
-        {isPlaying ? (
+        {isLoading ? (
+          <div className="w-6 h-6 border-2 border-gray-700 border-t-transparent rounded-full animate-spin" />
+        ) : isPlaying ? (
           <Pause className="w-8 h-8 sm:w-10 sm:h-10 text-gray-700" />
         ) : (
           <Play className="w-8 h-8 sm:w-10 sm:h-10 text-gray-700 ml-1" />
@@ -48,6 +54,7 @@ export function AudioControls({
       <button
         className="group flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-colors"
         onClick={onSkipForward}
+        disabled={isLoading}
       >
         <RotateCw
           size={36}
