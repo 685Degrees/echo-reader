@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { DocumentPlusIcon } from "@heroicons/react/24/outline";
+import { Subheader2, Paragraph, SmallText } from "@/components/Typography";
 
 export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
@@ -90,17 +91,21 @@ export default function Home() {
 
         {selectedFile ? (
           <div className="text-center">
-            <p className="text-lg mb-2 text-gray-700">{selectedFile}</p>
-            <p className="text-sm text-gray-500">
+            <Subheader2 className="mb-2 text-gray-700">
+              {selectedFile}
+            </Subheader2>
+            <Paragraph className="text-gray-500">
               Click or drop to change file
-            </p>
+            </Paragraph>
           </div>
         ) : (
           <div className="text-center">
-            <p className="text-lg mb-2 text-gray-700">
+            <Subheader2 className="mb-2 text-gray-700">
               Drop your PDF of your book here
-            </p>
-            <p className="text-sm text-gray-500">Maximum file size: 10MB</p>
+            </Subheader2>
+            <Paragraph className="text-gray-500">
+              Maximum file size: 10MB
+            </Paragraph>
           </div>
         )}
       </div>
