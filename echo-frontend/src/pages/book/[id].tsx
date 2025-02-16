@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { BookDropZone } from "@/components/BookDropZone";
 import { AudioProgress } from "@/components/AudioProgress";
 import { AudioControls } from "@/components/AudioControls";
 import { useWebRTC } from "@/hooks/useWebRTC";
@@ -8,26 +7,13 @@ import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { Header } from "@/components/Header";
 import { getBookById } from "@/lib/bookStorage";
 import { Book } from "@/types/book";
+import { BookOpenIcon } from "lucide-react";
 
 export default function BookViewer() {
   const router = useRouter();
   const { id } = router.query;
   const [book, setBook] = useState<Book | null>(null);
   const [isDiscussing, setIsDiscussing] = useState(false);
-
-  useEffect(() => {
-    if (typeof id === "string") {
-      const loadedBook = getBookById(id);
-      if (loadedBook) {
-        setBook(loadedBook);
-      } else {
-        router.push("/library");
-      }
-    }
-  }, [id, router]);
-
-  const { isConnected, isConnecting, startSession, stopSession, error } =
-    useWebRTC();
 
   const {
     isPlaying,
@@ -40,7 +26,26 @@ export default function BookViewer() {
     handleSkipBack,
     handleProgressChange,
     setIsPlaying,
+    setupSavedAudio,
   } = useAudioPlayer();
+
+  const { isConnected, isConnecting, startSession, stopSession, error } =
+    useWebRTC();
+
+  useEffect(() => {
+    if (typeof id === "string") {
+      const loadedBook = getBookById(id);
+      if (loadedBook) {
+        setBook(loadedBook);
+        // Load the audio file when book is loaded
+        if (loadedBook.audioUrl) {
+          setupSavedAudio(loadedBook.audioUrl);
+        }
+      } else {
+        router.push("/library");
+      }
+    }
+  }, [id, router, setupSavedAudio]);
 
   const handleDiscussToggle = async () => {
     if (isDiscussing) {
@@ -75,7 +80,9 @@ export default function BookViewer() {
       <Header />
       <main className="pt-20 flex flex-col items-center justify-center p-8 space-y-8">
         <div className="border border-gray-300 rounded-xl bg-white/70 shadow-sm w-full max-w-2xl">
-          <div className="border-b border-gray-300 p-4 bg-primary-50 rounded-t-xl">
+          <div className="border-b border-gray-300 p-4 bg-primary-50 rounded-t-xl flex items-center gap-3">
+            <BookOpenIcon className="w-5 h-5 text-gray-400" />
+
             <h1 className="text-2xl font-semibold text-gray-800">
               {book.title}
             </h1>

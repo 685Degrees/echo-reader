@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { cn, cleanTextWithGemini } from "@/lib/utils";
-import { FileUp, Save, Check, Loader2 } from "lucide-react";
+import { FileUp, Save, Check, Loader2, BookOpenIcon } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 import ePub from "epubjs";
 import pdfToText from "react-pdftotext";
@@ -11,14 +11,18 @@ import { v4 as uuidv4 } from "uuid";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
+  onSaveAudio: () => Promise<string>;
   text?: string;
   duration?: number;
+  isAudioReady?: boolean;
 }
 
 export function BookDropZone({
   onTextExtracted,
+  onSaveAudio,
   text,
   duration,
+  isAudioReady = false,
 }: BookDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -33,12 +37,16 @@ export function BookDropZone({
 
     setIsSaving(true);
     try {
+      // Get the audio URL using the saved stream
+      const audioUrl = await onSaveAudio();
+
+      // Then create and save the book
       const book: Book = {
         id: uuidv4(),
         bookSlug: slugify(selectedFile),
         title: selectedFile.replace(/\.(pdf|epub)$/, ""),
         text,
-        audioUrl: "",
+        audioUrl,
         lengthSeconds: duration || 0,
         createdAt: new Date().toISOString(),
       };
@@ -254,21 +262,23 @@ export function BookDropZone({
           <div className="border-b border-gray-300 p-4 bg-primary-50 rounded-t-xl">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <FileUp className="w-5 h-5 text-gray-400" />
-                <Subheader2 className="text-gray-700">
-                  {selectedFile || "Uploaded Book"}
-                </Subheader2>
+                <BookOpenIcon className="w-5 h-5 text-gray-400" />
+                <div className="flex-1">
+                  <Subheader2 className="text-gray-700">
+                    {selectedFile || "Uploaded Book"}
+                  </Subheader2>
+                </div>
               </div>
               <div className="flex items-center gap-4">
                 <button
                   onClick={handleSave}
-                  disabled={isSaving || isSaved}
+                  disabled={isSaving || isSaved || !isAudioReady}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium",
                     "transition duration-200",
                     isSaved
                       ? "bg-green-100 text-green-600 cursor-default"
-                      : isSaving || !selectedFile
+                      : isSaving || !selectedFile || !isAudioReady
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-primary-100 text-primary-600 hover:bg-primary-200"
                   )}
@@ -281,7 +291,11 @@ export function BookDropZone({
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      {isSaving ? "Saving..." : "Save to Library"}
+                      {isSaving
+                        ? "Saving..."
+                        : !isAudioReady
+                        ? "Preparing audio..."
+                        : "Save to Library"}
                     </>
                   )}
                 </button>

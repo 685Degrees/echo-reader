@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { BookCard } from "@/components/BookCard";
-import { getBookMetadata, getBookById } from "@/lib/bookStorage";
+import {
+  getBookMetadata,
+  getBookById,
+  deleteAllBooks,
+} from "@/lib/bookStorage";
 import { Book, BookMetadata } from "@/types/book";
 
 export default function Library() {
@@ -26,6 +30,21 @@ export default function Library() {
     loadBooks(); // Reload books after deletion
   };
 
+  const handleBookUpdate = () => {
+    loadBooks(); // Reload books after update
+  };
+
+  const handleDeleteAll = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete all books? This action cannot be undone."
+      )
+    ) {
+      deleteAllBooks();
+      loadBooks(); // Reload (empty) book list
+    }
+  };
+
   return (
     <div className="bg-primary-100 min-h-screen ">
       <Header />
@@ -43,6 +62,7 @@ export default function Library() {
               title={book.title}
               lengthSeconds={book.lengthSeconds}
               onDelete={handleBookDelete}
+              onUpdate={handleBookUpdate}
             />
           ))
         )}

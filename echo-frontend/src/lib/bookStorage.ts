@@ -48,9 +48,9 @@ export function getBookMetadata(): BookMetadata[] {
   }
 }
 
-export function getBook(bookSlug: string): Book | null {
+export function getBookById(id: string): Book | null {
   try {
-    const bookStr = localStorage.getItem(`${BOOKS_KEY}-${bookSlug}`);
+    const bookStr = localStorage.getItem(`${BOOKS_KEY}-${id}`);
     return bookStr ? JSON.parse(bookStr) : null;
   } catch (error) {
     console.error("Failed to get book:", error);
@@ -60,15 +60,8 @@ export function getBook(bookSlug: string): Book | null {
 
 export function deleteBook(id: string): void {
   try {
-    // Get all books to find the one to delete
-    const metadata = getBookMetadata();
-    const bookToDelete = metadata.find((book) => book.id === id);
-
-    if (!bookToDelete) {
-      throw new Error("Book not found");
-    }
-
     // Remove from metadata
+    const metadata = getBookMetadata();
     const updatedMetadata = metadata.filter((m) => m.id !== id);
     localStorage.setItem(BOOK_METADATA_KEY, JSON.stringify(updatedMetadata));
 
@@ -80,12 +73,64 @@ export function deleteBook(id: string): void {
   }
 }
 
-export function getBookById(id: string): Book | null {
+export function deleteAllBooks(): void {
   try {
-    const bookStr = localStorage.getItem(`${BOOKS_KEY}-${id}`);
-    return bookStr ? JSON.parse(bookStr) : null;
+    // Get all book metadata
+    const metadata = getBookMetadata();
+
+    // Delete each book's data
+    metadata.forEach((book) => {
+      localStorage.removeItem(`${BOOKS_KEY}-${book.id}`);
+    });
+
+    // Clear metadata
+    localStorage.removeItem(BOOK_METADATA_KEY);
   } catch (error) {
-    console.error("Failed to get book:", error);
-    return null;
+    console.error("Failed to delete all books:", error);
+    throw new Error("Failed to delete all books");
   }
 }
+
+interface BookUpdate {
+  title?: string;
+  // Add other fields that can be updated here in the future
+}
+
+export const updateBook = async (
+  id: string,
+  updates: BookUpdate
+): Promise<void> => {
+  const book = getBookById(id);
+  if (!book) {
+    throw new Error(`Book with id ${id} not found`);
+  }
+
+  // Get all metadata
+  const metadata = getBookMetadata();
+  const metadataIndex = metadata.findIndex((meta) => meta.id === id);
+  if (metadataIndex === -1) {
+    throw new Error(`Metadata for book ${id} not found`);
+  }
+
+  // Update the book object
+  const updatedBook = {
+    ...book,
+    ...updates,
+  };
+
+  // Update metadata
+  const updatedMetadata = [...metadata];
+  updatedMetadata[metadataIndex] = {
+    ...metadata[metadataIndex],
+    ...updates,
+  };
+
+  // Save both the updated book and metadata
+  try {
+    localStorage.setItem(`${BOOKS_KEY}-${id}`, JSON.stringify(updatedBook));
+    localStorage.setItem(BOOK_METADATA_KEY, JSON.stringify(updatedMetadata));
+  } catch (error) {
+    console.error("Failed to save updated book:", error);
+    throw new Error("Failed to save book updates");
+  }
+};

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 export function useAudioPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -6,6 +6,7 @@ export function useAudioPlayer() {
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
   const [duration, setDuration] = useState(0);
   const [bufferingProgress, setBufferingProgress] = useState(0);
+  const [isAudioReady, setIsAudioReady] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mediaSourceRef = useRef<MediaSource | null>(null);
   const sourceBufferRef = useRef<SourceBuffer | null>(null);
@@ -19,6 +20,7 @@ export function useAudioPlayer() {
     }
 
     setIsLoading(true);
+    setIsAudioReady(false);
     setBufferingProgress(0);
     setDuration(0);
 
@@ -53,6 +55,11 @@ export function useAudioPlayer() {
       newAudio.ontimeupdate = () => {
         setCurrentTimeSeconds(newAudio.currentTime);
       };
+
+      // Add event listener for when audio is ready
+      newAudio.addEventListener("canplaythrough", () => {
+        setIsAudioReady(true);
+      });
 
       await new Promise<void>((resolve) => {
         mediaSource.addEventListener("sourceopen", async () => {
@@ -108,6 +115,61 @@ export function useAudioPlayer() {
       setIsLoading(false);
     }
   };
+
+  // Wrap setupSavedAudio in useCallback
+  const setupSavedAudio = useCallback((audioUrl: string) => {
+    if (audioRef.current) {
+      // Clean up existing audio
+      audioRef.current.pause();
+      URL.revokeObjectURL(audioRef.current.src);
+      audioRef.current = null;
+    }
+
+    setIsLoading(true);
+    setIsAudioReady(false);
+    setBufferingProgress(0);
+    setDuration(0);
+
+    try {
+      const newAudio = new Audio(audioUrl);
+      audioRef.current = newAudio;
+
+      // Add all the same event listeners as setupAudioStream
+      newAudio.onloadedmetadata = () => {
+        if (
+          newAudio.duration &&
+          !isNaN(newAudio.duration) &&
+          newAudio.duration !== Infinity
+        ) {
+          setDuration(newAudio.duration);
+        }
+      };
+
+      newAudio.ondurationchange = () => {
+        if (
+          newAudio.duration &&
+          !isNaN(newAudio.duration) &&
+          newAudio.duration !== Infinity
+        ) {
+          setDuration(newAudio.duration);
+        }
+      };
+
+      newAudio.onended = () => setIsPlaying(false);
+      newAudio.ontimeupdate = () => {
+        setCurrentTimeSeconds(newAudio.currentTime);
+      };
+
+      newAudio.addEventListener("canplaythrough", () => {
+        setIsAudioReady(true);
+        setIsLoading(false);
+        setBufferingProgress(100);
+      });
+    } catch (error) {
+      console.error("Error loading saved audio:", error);
+      setIsLoading(false);
+    }
+  }, []); // Empty dependency array since it only uses setState functions which are stable
 
   // Cleanup on unmount
   useEffect(() => {
@@ -177,11 +239,13 @@ export function useAudioPlayer() {
     currentTimeSeconds,
     duration,
     bufferingProgress,
+    isAudioReady,
     handlePlayPause,
     handleSkipForward,
     handleSkipBack,
     handleProgressChange,
     setIsPlaying,
     setupAudioStream,
+    setupSavedAudio,
   };
 }
