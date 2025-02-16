@@ -15,20 +15,6 @@ export default function BookViewer() {
   const [book, setBook] = useState<Book | null>(null);
   const [isDiscussing, setIsDiscussing] = useState(false);
 
-  useEffect(() => {
-    if (typeof id === "string") {
-      const loadedBook = getBookById(id);
-      if (loadedBook) {
-        setBook(loadedBook);
-      } else {
-        router.push("/library");
-      }
-    }
-  }, [id, router]);
-
-  const { isConnected, isConnecting, startSession, stopSession, error } =
-    useWebRTC();
-
   const {
     isPlaying,
     isLoading,
@@ -40,7 +26,25 @@ export default function BookViewer() {
     handleSkipBack,
     handleProgressChange,
     setIsPlaying,
+    setupAudioFromUrl,
   } = useAudioPlayer();
+
+  useEffect(() => {
+    if (typeof id === "string") {
+      const loadedBook = getBookById(id);
+      if (loadedBook) {
+        setBook(loadedBook);
+        if (loadedBook.audioUrl) {
+          setupAudioFromUrl(loadedBook.audioUrl);
+        }
+      } else {
+        router.push("/library");
+      }
+    }
+  }, [id, router, setupAudioFromUrl]);
+
+  const { isConnected, isConnecting, startSession, stopSession, error } =
+    useWebRTC();
 
   const handleDiscussToggle = async () => {
     if (isDiscussing) {
@@ -49,7 +53,6 @@ export default function BookViewer() {
       stopSession();
     } else {
       setIsDiscussing(true);
-      // Pause audio when starting discussion
       if (isPlaying) {
         handlePlayPause();
       }

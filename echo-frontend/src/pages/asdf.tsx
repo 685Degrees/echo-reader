@@ -29,6 +29,7 @@ export default function Home() {
     handleProgressChange,
     setIsPlaying,
     setupAudioStream,
+    isAudioReady,
   } = useAudioPlayer();
 
   const handleTextExtracted = async (text: string) => {
@@ -92,6 +93,7 @@ export default function Home() {
           onSaveAudio={handleSaveAudio}
           text={bookText}
           duration={duration}
+          isAudioReady={isAudioReady}
         />
 
         {bookText && (

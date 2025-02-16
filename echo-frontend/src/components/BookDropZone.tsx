@@ -14,6 +14,7 @@ interface BookDropZoneProps {
   onSaveAudio: () => Promise<string>;
   text?: string;
   duration?: number;
+  isAudioReady?: boolean;
 }
 
 export function BookDropZone({
@@ -21,6 +22,7 @@ export function BookDropZone({
   onSaveAudio,
   text,
   duration,
+  isAudioReady = false,
 }: BookDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -268,13 +270,13 @@ export function BookDropZone({
               <div className="flex items-center gap-4">
                 <button
                   onClick={handleSave}
-                  disabled={isSaving || isSaved}
+                  disabled={isSaving || isSaved || !isAudioReady}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium",
                     "transition duration-200",
                     isSaved
                       ? "bg-green-100 text-green-600 cursor-default"
-                      : isSaving || !selectedFile
+                      : isSaving || !selectedFile || !isAudioReady
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-primary-100 text-primary-600 hover:bg-primary-200"
                   )}
@@ -287,7 +289,11 @@ export function BookDropZone({
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      {isSaving ? "Saving..." : "Save to Library"}
+                      {isSaving
+                        ? "Saving..."
+                        : !isAudioReady
+                        ? "Preparing audio..."
+                        : "Save to Library"}
                     </>
                   )}
                 </button>

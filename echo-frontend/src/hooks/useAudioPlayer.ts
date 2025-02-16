@@ -6,6 +6,7 @@ export function useAudioPlayer() {
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
   const [duration, setDuration] = useState(0);
   const [bufferingProgress, setBufferingProgress] = useState(0);
+  const [isAudioReady, setIsAudioReady] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mediaSourceRef = useRef<MediaSource | null>(null);
   const sourceBufferRef = useRef<SourceBuffer | null>(null);
@@ -19,6 +20,7 @@ export function useAudioPlayer() {
     }
 
     setIsLoading(true);
+    setIsAudioReady(false);
     setBufferingProgress(0);
     setDuration(0);
 
@@ -53,6 +55,11 @@ export function useAudioPlayer() {
       newAudio.ontimeupdate = () => {
         setCurrentTimeSeconds(newAudio.currentTime);
       };
+
+      // Add event listener for when audio is ready
+      newAudio.addEventListener("canplaythrough", () => {
+        setIsAudioReady(true);
+      });
 
       await new Promise<void>((resolve) => {
         mediaSource.addEventListener("sourceopen", async () => {
@@ -171,17 +178,77 @@ export function useAudioPlayer() {
     }
   };
 
+  // Add a new method to load from URL
+  const setupAudioFromUrl = (audioUrl: string) => {
+    if (audioRef.current) {
+      // Clean up existing audio
+      audioRef.current.pause();
+      URL.revokeObjectURL(audioRef.current.src);
+      audioRef.current = null;
+    }
+
+    setIsLoading(true);
+    setIsAudioReady(false);
+    setBufferingProgress(0);
+    setDuration(0);
+
+    try {
+      const newAudio = new Audio(audioUrl);
+      audioRef.current = newAudio;
+
+      newAudio.onloadedmetadata = () => {
+        if (
+          newAudio.duration &&
+          !isNaN(newAudio.duration) &&
+          newAudio.duration !== Infinity
+        ) {
+          setDuration(newAudio.duration);
+        }
+      };
+
+      newAudio.ondurationchange = () => {
+        if (
+          newAudio.duration &&
+          !isNaN(newAudio.duration) &&
+          newAudio.duration !== Infinity
+        ) {
+          setDuration(newAudio.duration);
+        }
+      };
+
+      newAudio.onended = () => setIsPlaying(false);
+      newAudio.ontimeupdate = () => {
+        setCurrentTimeSeconds(newAudio.currentTime);
+      };
+
+      // Add event listener for when audio is ready
+      newAudio.addEventListener("canplaythrough", () => {
+        setIsAudioReady(true);
+        setIsLoading(false);
+        setBufferingProgress(100);
+      });
+
+      // Start loading the audio
+      newAudio.load();
+    } catch (error) {
+      console.error("Error preparing audio:", error);
+      setIsLoading(false);
+    }
+  };
+
   return {
     isPlaying,
     isLoading,
     currentTimeSeconds,
     duration,
     bufferingProgress,
+    isAudioReady,
     handlePlayPause,
     handleSkipForward,
     handleSkipBack,
     handleProgressChange,
     setIsPlaying,
     setupAudioStream,
+    setupAudioFromUrl,
   };
 }
