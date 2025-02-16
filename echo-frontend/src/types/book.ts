@@ -1,4 +1,5 @@
 export interface Book {
+  id: string; // UUID
   bookSlug: string;
   title: string;
   text: string;

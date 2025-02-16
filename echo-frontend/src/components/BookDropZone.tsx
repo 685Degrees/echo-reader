@@ -7,13 +7,19 @@ import pdfToText from "react-pdftotext";
 import { saveBook } from "@/lib/bookStorage";
 import { Book } from "@/types/book";
 import { slugify } from "@/lib/utils";
+import { v4 as uuidv4 } from "uuid";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
   text?: string;
+  duration?: number;
 }
 
-export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
+export function BookDropZone({
+  onTextExtracted,
+  text,
+  duration,
+}: BookDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -27,11 +33,12 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
     setIsSaving(true);
     try {
       const book: Book = {
+        id: uuidv4(),
         bookSlug: slugify(selectedFile),
         title: selectedFile.replace(/\.(pdf|epub)$/, ""),
         text,
-        audioUrl: "", // We'll need to implement audio saving later
-        lengthSeconds: 0, // This will be updated when we know the duration
+        audioUrl: "",
+        lengthSeconds: duration || 0,
         createdAt: new Date().toISOString(),
       };
       await saveBook(book);

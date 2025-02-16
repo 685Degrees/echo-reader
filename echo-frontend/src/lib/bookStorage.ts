@@ -59,20 +59,46 @@ export function getBook(bookSlug: string): Book | null {
   }
 }
 
-export function deleteBook(bookSlug: string): void {
+export function deleteBook(id: string): void {
   try {
-    // Remove from metadata
-    const existingMetadataStr = localStorage.getItem(BOOK_METADATA_KEY);
-    if (existingMetadataStr) {
-      const metadata: BookMetadata[] = JSON.parse(existingMetadataStr);
-      const updatedMetadata = metadata.filter((m) => m.bookSlug !== bookSlug);
-      localStorage.setItem(BOOK_METADATA_KEY, JSON.stringify(updatedMetadata));
+    // Get all books to find the one to delete
+    const metadata = getBookMetadata();
+    const bookToDelete = metadata.find((book) => {
+      const bookData = getBook(book.bookSlug);
+      return bookData?.id === id;
+    });
+
+    if (!bookToDelete) {
+      throw new Error("Book not found");
     }
 
+    // Remove from metadata
+    const updatedMetadata = metadata.filter((m) => {
+      const bookData = getBook(m.bookSlug);
+      return bookData?.id !== id;
+    });
+    localStorage.setItem(BOOK_METADATA_KEY, JSON.stringify(updatedMetadata));
+
     // Remove book data
-    localStorage.removeItem(`${BOOKS_KEY}-${bookSlug}`);
+    localStorage.removeItem(`${BOOKS_KEY}-${bookToDelete.bookSlug}`);
   } catch (error) {
     console.error("Failed to delete book:", error);
     throw new Error("Failed to delete book");
+  }
+}
+
+export function getBookById(id: string): Book | null {
+  try {
+    const metadata = getBookMetadata();
+    for (const meta of metadata) {
+      const book = getBook(meta.bookSlug);
+      if (book?.id === id) {
+        return book;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error("Failed to get book by id:", error);
+    return null;
   }
 }
