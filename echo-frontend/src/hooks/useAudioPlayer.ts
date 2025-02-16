@@ -31,13 +31,23 @@ export function useAudioPlayer(text: string) {
 
         // Set up event listeners before starting stream
         newAudio.onloadedmetadata = () => {
-          if (newAudio.duration && !isNaN(newAudio.duration)) {
+          if (
+            newAudio.duration &&
+            !isNaN(newAudio.duration) &&
+            newAudio.duration !== Infinity
+          ) {
+            console.log("on loaded metadata duration", newAudio.duration);
             setDuration(newAudio.duration);
           }
         };
 
         newAudio.ondurationchange = () => {
-          if (newAudio.duration && !isNaN(newAudio.duration)) {
+          if (
+            newAudio.duration &&
+            !isNaN(newAudio.duration) &&
+            newAudio.duration !== Infinity
+          ) {
+            console.log("on duration change duration", newAudio.duration);
             setDuration(newAudio.duration);
           }
         };
@@ -82,6 +92,8 @@ export function useAudioPlayer(text: string) {
               };
               checkBuffer();
             });
+
+            console.log("value", value);
 
             // Append chunk to source buffer
             sourceBuffer.appendBuffer(value);
@@ -187,5 +199,6 @@ export function useAudioPlayer(text: string) {
     handleSkipForward,
     handleSkipBack,
     handleProgressChange,
+    setIsPlaying,
   };
 }

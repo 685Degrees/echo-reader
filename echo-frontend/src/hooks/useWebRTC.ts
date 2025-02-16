@@ -4,7 +4,7 @@ interface UseWebRTCReturn {
   isConnected: boolean;
   isConnecting: boolean;
   startSession: () => Promise<void>;
-  sendMessage: (message: string) => void;
+  stopSession: () => void;
   error: string | null;
 }
 
@@ -96,14 +96,34 @@ export const useWebRTC = (): UseWebRTCReturn => {
 
       dataChannel.current.onopen = () => {
         console.log("Data channel opened");
+        // Send session configuration with server VAD enabled
+        if (dataChannel.current?.readyState === "open") {
+          const config = {
+            type: "session.update",
+            session: {
+              modalities: ["text", "audio"],
+              turn_detection: {
+                type: "server_vad",
+                threshold: 0.5,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 500,
+                create_response: true,
+              },
+            },
+          };
+          console.log("Sending session config:", config);
+          dataChannel.current.send(JSON.stringify(config));
+        }
       };
 
       dataChannel.current.onclose = () => {
         console.log("Data channel closed");
+        setIsConnected(false);
       };
 
       dataChannel.current.onerror = (error) => {
         console.error("Data channel error:", error);
+        setError("Data channel error occurred");
       };
 
       dataChannel.current.onmessage = (event) => {
@@ -151,31 +171,27 @@ export const useWebRTC = (): UseWebRTCReturn => {
     }
   }, []);
 
-  const sendMessage = useCallback((message: string) => {
-    if (dataChannel.current?.readyState === "open") {
-      const event = {
-        type: "response.create",
-        response: {
-          modalities: ["audio", "text"],
-          instructions: message,
-        },
-      };
-      console.log("Sending message to data channel:", event);
-      dataChannel.current.send(JSON.stringify(event));
-    } else {
-      console.error(
-        "Cannot send message - data channel state:",
-        dataChannel.current?.readyState
-      );
-      setError("Data channel is not open");
+  const stopSession = useCallback(() => {
+    if (peerConnection.current) {
+      peerConnection.current.close();
+      peerConnection.current = null;
     }
+    if (dataChannel.current) {
+      dataChannel.current.close();
+      dataChannel.current = null;
+    }
+    if (audioElement.current) {
+      audioElement.current.srcObject = null;
+      audioElement.current = null;
+    }
+    setIsConnected(false);
   }, []);
 
   return {
     isConnected,
     isConnecting,
     startSession,
-    sendMessage,
+    stopSession,
     error,
   };
 };

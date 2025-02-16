@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
-import { cn } from "@/lib/utils";
+import { cn, cleanTextWithGemini } from "@/lib/utils";
 import { FileUp } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 import ePub from "epubjs";
+import pdfToText from "react-pdftotext";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
@@ -11,6 +12,7 @@ interface BookDropZoneProps {
 export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -32,18 +34,23 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
 
   const extractTextFromPdf = async (file: File) => {
     try {
-      // Dynamically import react-pdftotext
-      const pdfToText = (await import("react-pdftotext")).default;
+      setIsProcessing(true);
       const text = await pdfToText(file);
-      onTextExtracted(text);
-      console.log("Extracted text from PDF:", text);
+      // console.log("Text:", text.slice(0, 1000));
+      const cleanedText = await cleanTextWithGemini(text);
+      console.log("Cleaned text:", cleanedText);
+      onTextExtracted(cleanedText);
+      console.log("Extracted and cleaned text from PDF");
     } catch (error) {
       console.error("Failed to extract text from PDF", error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const extractTextFromEpub = async (file: File) => {
     try {
+      setIsProcessing(true);
       const arrayBuffer = await file.arrayBuffer();
       const book = ePub(arrayBuffer);
       await book.ready;
@@ -68,10 +75,19 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
         }
       }
 
-      onTextExtracted(fullText.trim());
-      console.log("Extracted text from EPUB successfully");
+      console.log("Full text:", fullText.slice(0, 1000));
+
+      const cleanedText = await cleanTextWithGemini(
+        fullText.trim().slice(0, 1000)
+      );
+      console.log("Cleaned text:", cleanedText);
+
+      onTextExtracted(cleanedText);
+      console.log("Extracted and cleaned text from EPUB successfully");
     } catch (error) {
       console.error("Failed to extract text from EPUB", error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -162,9 +178,13 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
 
       {selectedFile ? (
         <div className="text-center">
-          <Subheader2 className="mb-2 text-gray-700">{selectedFile}</Subheader2>
+          <Subheader2 className="mb-2 text-gray-700">
+            {isProcessing ? "Processing..." : selectedFile}
+          </Subheader2>
           <Paragraph className="text-gray-500">
-            Click or drop to change file
+            {isProcessing
+              ? "This may take a few moments..."
+              : "Click or drop to change file"}
           </Paragraph>
         </div>
       ) : (
