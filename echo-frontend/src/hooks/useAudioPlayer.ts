@@ -61,7 +61,7 @@ export function useAudioPlayer(text: string) {
           const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
           sourceBufferRef.current = sourceBuffer;
 
-          // Start streaming audio
+          // Start streaming generated audio
           const response = await fetch("/api/tts-eleven", {
             method: "POST",
             headers: {
