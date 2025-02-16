@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { cn, cleanTextWithGemini } from "@/lib/utils";
-import { FileUp, Save } from "lucide-react";
+import { FileUp, Save, Check } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 import ePub from "epubjs";
 import pdfToText from "react-pdftotext";
@@ -18,10 +18,11 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 
   const handleSave = async () => {
-    if (!text || !selectedFile) return;
+    if (!text || !selectedFile || isSaved) return;
 
     setIsSaving(true);
     try {
@@ -34,6 +35,7 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
         createdAt: new Date().toISOString(),
       };
       await saveBook(book);
+      setIsSaved(true);
     } catch (error) {
       console.error("Failed to save book:", error);
     } finally {
@@ -229,26 +231,38 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
               <div className="flex items-center gap-4">
                 <button
                   onClick={handleSave}
-                  disabled={isSaving || !selectedFile}
+                  disabled={isSaving || isSaved}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium",
                     "transition duration-200",
-                    isSaving || !selectedFile
+                    isSaved
+                      ? "bg-green-100 text-green-600 cursor-default"
+                      : isSaving || !selectedFile
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : "bg-primary-100 text-primary-600 hover:bg-primary-200"
                   )}
                 >
-                  <Save className="w-4 h-4" />
-                  {isSaving ? "Saving..." : "Save to Library"}
+                  {isSaved ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      Saved to Library
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      {isSaving ? "Saving..." : "Save to Library"}
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    setIsSaved(false);
                     document.getElementById("file-input")?.click();
                   }}
                   className="text-sm text-primary-600 hover:text-primary-800 font-medium"
                 >
-                  Change file
+                  Upload new file
                 </button>
               </div>
             </div>
