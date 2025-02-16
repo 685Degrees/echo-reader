@@ -15,6 +15,8 @@ export default function BookViewer() {
   const [book, setBook] = useState<Book | null>(null);
   const [isDiscussing, setIsDiscussing] = useState(false);
 
+  console.log(book);
+
   useEffect(() => {
     if (typeof slug === "string") {
       const loadedBook = getBook(slug);

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-export function useAudioPlayer(text: string) {
+export function useAudioPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
@@ -9,71 +9,57 @@ export function useAudioPlayer(text: string) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mediaSourceRef = useRef<MediaSource | null>(null);
   const sourceBufferRef = useRef<SourceBuffer | null>(null);
-  const chunksReceivedRef = useRef<number>(0);
-  const totalChunksRef = useRef<number>(0);
 
-  // Prepare audio when text changes
-  useEffect(() => {
-    const prepareAudio = async () => {
-      if (!text || audioRef.current) return;
+  const setupAudioStream = async (stream: ReadableStream<Uint8Array>) => {
+    if (audioRef.current) {
+      // Clean up existing audio
+      audioRef.current.pause();
+      URL.revokeObjectURL(audioRef.current.src);
+      audioRef.current = null;
+    }
 
-      setIsLoading(true);
-      setBufferingProgress(0);
-      setDuration(0); // Reset duration when starting new audio
+    setIsLoading(true);
+    setBufferingProgress(0);
+    setDuration(0);
 
-      try {
-        // Create MediaSource instance
-        const mediaSource = new MediaSource();
-        mediaSourceRef.current = mediaSource;
-        const audioUrl = URL.createObjectURL(mediaSource);
-        const newAudio = new Audio(audioUrl);
-        audioRef.current = newAudio;
+    try {
+      const mediaSource = new MediaSource();
+      mediaSourceRef.current = mediaSource;
+      const audioUrl = URL.createObjectURL(mediaSource);
+      const newAudio = new Audio(audioUrl);
+      audioRef.current = newAudio;
 
-        // Set up event listeners before starting stream
-        newAudio.onloadedmetadata = () => {
-          if (
-            newAudio.duration &&
-            !isNaN(newAudio.duration) &&
-            newAudio.duration !== Infinity
-          ) {
-            console.log("on loaded metadata duration", newAudio.duration);
-            setDuration(newAudio.duration);
-          }
-        };
+      newAudio.onloadedmetadata = () => {
+        if (
+          newAudio.duration &&
+          !isNaN(newAudio.duration) &&
+          newAudio.duration !== Infinity
+        ) {
+          setDuration(newAudio.duration);
+        }
+      };
 
-        newAudio.ondurationchange = () => {
-          if (
-            newAudio.duration &&
-            !isNaN(newAudio.duration) &&
-            newAudio.duration !== Infinity
-          ) {
-            console.log("on duration change duration", newAudio.duration);
-            setDuration(newAudio.duration);
-          }
-        };
+      newAudio.ondurationchange = () => {
+        if (
+          newAudio.duration &&
+          !isNaN(newAudio.duration) &&
+          newAudio.duration !== Infinity
+        ) {
+          setDuration(newAudio.duration);
+        }
+      };
 
-        newAudio.onended = () => setIsPlaying(false);
-        newAudio.ontimeupdate = () => {
-          setCurrentTimeSeconds(newAudio.currentTime);
-        };
+      newAudio.onended = () => setIsPlaying(false);
+      newAudio.ontimeupdate = () => {
+        setCurrentTimeSeconds(newAudio.currentTime);
+      };
 
+      await new Promise<void>((resolve) => {
         mediaSource.addEventListener("sourceopen", async () => {
           const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
           sourceBufferRef.current = sourceBuffer;
 
-          // Start streaming generated audio
-          const response = await fetch("/api/tts-eleven", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ text }),
-          });
-
-          if (!response.ok) throw new Error("Failed to generate speech");
-          if (!response.body) throw new Error("Response body is null");
-
-          const reader = response.body.getReader();
+          const reader = stream.getReader();
           let receivedLength = 0;
 
           // Read chunks
@@ -93,17 +79,14 @@ export function useAudioPlayer(text: string) {
               checkBuffer();
             });
 
-            console.log("value", value);
-
             // Append chunk to source buffer
             sourceBuffer.appendBuffer(value);
             receivedLength += value.length;
 
-            // Update buffering progress based on received data
-            // Note: This is an estimate since we don't know the total size
+            // Update buffering progress
             setBufferingProgress(
               Math.min((receivedLength / (1024 * 1024)) * 20, 100)
-            ); // Assuming ~1MB total size
+            );
           }
 
           // Close media source when all chunks are received
@@ -115,17 +98,16 @@ export function useAudioPlayer(text: string) {
               }
             });
           }
+          resolve();
         });
+      });
 
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error preparing audio:", error);
-        setIsLoading(false);
-      }
-    };
-
-    prepareAudio();
-  }, [text]);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error preparing audio:", error);
+      setIsLoading(false);
+    }
+  };
 
   // Cleanup on unmount
   useEffect(() => {
@@ -138,7 +120,7 @@ export function useAudioPlayer(text: string) {
   }, []);
 
   const handlePlayPause = async () => {
-    if (!text || !audioRef.current || isLoading) return;
+    if (!audioRef.current || isLoading) return;
 
     try {
       if (isPlaying) {
@@ -200,5 +182,6 @@ export function useAudioPlayer(text: string) {
     handleSkipBack,
     handleProgressChange,
     setIsPlaying,
+    setupAudioStream,
   };
 }

@@ -293,3 +293,20 @@ export function slugify(text: string): string {
     .replace(/^-+/, "") // Trim - from start of text
     .replace(/-+$/, ""); // Trim - from end of text
 }
+
+export async function generateSpeech(
+  text: string
+): Promise<ReadableStream<Uint8Array>> {
+  const response = await fetch("/api/tts-eleven", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ text }),
+  });
+
+  if (!response.ok) throw new Error("Failed to generate speech");
+  if (!response.body) throw new Error("Response body is null");
+
+  return response.body;
+}

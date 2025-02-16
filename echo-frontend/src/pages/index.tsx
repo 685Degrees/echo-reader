@@ -5,6 +5,7 @@ import { AudioControls } from "@/components/AudioControls";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { Header } from "@/components/Header";
+import { generateSpeech } from "@/lib/utils";
 
 export default function Home() {
   const [bookText, setBookText] = useState("");
@@ -24,7 +25,18 @@ export default function Home() {
     handleSkipBack,
     handleProgressChange,
     setIsPlaying,
-  } = useAudioPlayer(bookText);
+    setupAudioStream,
+  } = useAudioPlayer();
+
+  const handleTextExtracted = async (text: string) => {
+    setBookText(text);
+    try {
+      const stream = await generateSpeech(text);
+      await setupAudioStream(stream);
+    } catch (error) {
+      console.error("Error generating speech:", error);
+    }
+  };
 
   const handleDiscussToggle = async () => {
     if (isDiscussing) {
@@ -54,7 +66,7 @@ export default function Home() {
     <div className="bg-primary-100 min-h-screen ">
       <Header />
       <main className="pt-20 flex flex-col items-center justify-center p-8 space-y-8">
-        <BookDropZone onTextExtracted={setBookText} text={bookText} />
+        <BookDropZone onTextExtracted={handleTextExtracted} text={bookText} />
 
         {bookText && (
           <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
