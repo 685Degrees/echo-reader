@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { BookCard } from "@/components/BookCard";
-import { getBookMetadata, getBook } from "@/lib/bookStorage";
+import { getBookMetadata, getBookById } from "@/lib/bookStorage";
 import { Book, BookMetadata } from "@/types/book";
 
 export default function Library() {
@@ -10,7 +10,10 @@ export default function Library() {
   const loadBooks = () => {
     const metadata = getBookMetadata();
     const fullBooks = metadata
-      .map((meta) => getBook(meta.bookSlug))
+      .map((meta) => {
+        const book = getBookById(meta.id);
+        return book;
+      })
       .filter((book): book is Book => book !== null);
     setBooks(fullBooks);
   };
@@ -37,7 +40,6 @@ export default function Library() {
             <BookCard
               key={book.id}
               id={book.id}
-              bookSlug={book.bookSlug}
               title={book.title}
               lengthSeconds={book.lengthSeconds}
               onDelete={handleBookDelete}

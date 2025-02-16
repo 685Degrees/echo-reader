@@ -6,27 +6,25 @@ import { AudioControls } from "@/components/AudioControls";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { Header } from "@/components/Header";
-import { getBook } from "@/lib/bookStorage";
+import { getBookById } from "@/lib/bookStorage";
 import { Book } from "@/types/book";
 
 export default function BookViewer() {
   const router = useRouter();
-  const { slug } = router.query;
+  const { id } = router.query;
   const [book, setBook] = useState<Book | null>(null);
   const [isDiscussing, setIsDiscussing] = useState(false);
 
-  console.log(book);
-
   useEffect(() => {
-    if (typeof slug === "string") {
-      const loadedBook = getBook(slug);
+    if (typeof id === "string") {
+      const loadedBook = getBookById(id);
       if (loadedBook) {
         setBook(loadedBook);
       } else {
         router.push("/library");
       }
     }
-  }, [slug, router]);
+  }, [id, router]);
 
   const { isConnected, isConnecting, startSession, stopSession, error } =
     useWebRTC();
@@ -42,7 +40,7 @@ export default function BookViewer() {
     handleSkipBack,
     handleProgressChange,
     setIsPlaying,
-  } = useAudioPlayer(book?.text || "");
+  } = useAudioPlayer();
 
   const handleDiscussToggle = async () => {
     if (isDiscussing) {

@@ -7,7 +7,6 @@ import { deleteBook } from "@/lib/bookStorage";
 
 interface BookCardProps {
   id: string;
-  bookSlug: string;
   title: string;
   lengthSeconds: number;
   onDelete?: () => void;
@@ -15,7 +14,6 @@ interface BookCardProps {
 
 export const BookCard: FC<BookCardProps> = ({
   id,
-  bookSlug,
   title,
   lengthSeconds,
   onDelete,
@@ -48,7 +46,7 @@ export const BookCard: FC<BookCardProps> = ({
 
   return (
     <Link
-      href={`/book/${bookSlug}`}
+      href={`/book/${id}`}
       className="group relative bg-primary-50 border rounded-xl p-12 w-full max-w-sm hover:bg-primary-200 transition-colors duration-200"
     >
       <div className="space-y-2">
