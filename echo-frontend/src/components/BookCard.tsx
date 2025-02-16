@@ -106,7 +106,7 @@ export const BookCard: FC<BookCardProps> = ({
   return (
     <Link
       href={`/book/${id}`}
-      className="group relative bg-primary-50 border rounded-xl p-12 w-full max-w-sm hover:bg-primary-200 transition-colors duration-200"
+      className="group relative bg-primary-50 border rounded-xl p-12 w-full max-w-[320px] min-w-[320px] hover:bg-primary-200 transition-colors duration-200 block"
     >
       <div className="space-y-2">
         {isEditing ? (
@@ -121,8 +121,8 @@ export const BookCard: FC<BookCardProps> = ({
             onClick={(e) => e.preventDefault()}
           />
         ) : (
-          <Subheader2 className="text-xl font-semibold text-gray-800">
-            {title}
+          <Subheader2 className="text-xl font-semibold truncate">
+            <span className="block truncate">{title}</span>
           </Subheader2>
         )}
         <Paragraph className="text-gray-600">

@@ -9,3 +9,13 @@ body {
   background: rgb(var(--background-rgb));
   font-family: "Instrument Sans", sans-serif;
 }
+
+/* Add this to your existing CSS */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
