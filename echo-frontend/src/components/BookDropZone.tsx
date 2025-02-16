@@ -218,7 +218,7 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
               onChange={handleFileSelect}
             />
           </div>
-          <div className="max-h-[400px] overflow-y-auto rounded-lg px-8 my-4">
+          <div className="max-h-[300px] overflow-y-auto rounded-lg px-8 my-4">
             <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
               {text}
             </p>
