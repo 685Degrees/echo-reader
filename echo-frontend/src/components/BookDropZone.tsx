@@ -7,9 +7,10 @@ import pdfToText from "react-pdftotext";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
+  text?: string;
 }
 
-export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
+export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -146,54 +147,95 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
   };
 
   return (
-    <div
-      className={cn(
-        "w-full max-w-2xl aspect-video border-2 border-dashed rounded-2xl",
-        "flex flex-col items-center justify-center p-8 bg-white/70",
-        "hover:bg-white/90",
-        "transition-colors duration-200",
-        isDragging ? "border-blue-500 bg-blue-50" : "border-gray-400",
-        "cursor-pointer"
-      )}
-      onDragEnter={handleDragIn}
-      onDragLeave={handleDragOut}
-      onDragOver={handleDrag}
-      onDrop={handleDrop}
-      onClick={() => document.getElementById("file-input")?.click()}
-    >
-      <input
-        id="file-input"
-        type="file"
-        accept=".pdf,.epub"
-        className="hidden"
-        onChange={handleFileSelect}
-      />
+    <div className="w-full max-w-2xl">
+      {!text ? (
+        // Show full drop zone when no text
+        <div
+          className={cn(
+            "w-full aspect-video border-2 border-dashed rounded-2xl",
+            "flex flex-col items-center justify-center p-8 bg-white/70",
+            "hover:bg-white/90",
+            "transition-colors duration-200",
+            isDragging ? "border-blue-500 bg-blue-50" : "border-gray-400",
+            "cursor-pointer"
+          )}
+          onDragEnter={handleDragIn}
+          onDragLeave={handleDragOut}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+          onClick={() => document.getElementById("file-input")?.click()}
+        >
+          <input
+            id="file-input"
+            type="file"
+            accept=".pdf,.epub"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
 
-      <FileUp
-        className={cn(
-          "w-12 h-12 mb-4",
-          isDragging ? "text-blue-500" : "text-gray-400"
-        )}
-      />
+          <FileUp
+            className={cn(
+              "w-12 h-12 mb-4",
+              isDragging ? "text-blue-500" : "text-gray-400"
+            )}
+          />
 
-      {selectedFile ? (
-        <div className="text-center">
-          <Subheader2 className="mb-2 text-gray-700">
-            {isProcessing ? "Processing..." : selectedFile}
-          </Subheader2>
-          <Paragraph className="text-gray-500">
-            {isProcessing
-              ? "This may take a few moments..."
-              : "Click or drop to change file"}
-          </Paragraph>
+          <div className="text-center">
+            <Subheader2 className="mb-2 text-gray-700">
+              Drop your book here
+            </Subheader2>
+            <Paragraph className="text-gray-500">
+              Supports PDF and EPUB formats • Maximum file size: 10MB
+            </Paragraph>
+          </div>
         </div>
       ) : (
-        <div className="text-center">
-          <Subheader2 className="mb-2 text-gray-700">
-            Drop your book here
-          </Subheader2>
-          <Paragraph className="text-gray-500">
-            Supports PDF and EPUB formats • Maximum file size: 10MB
+        // Show compact view with text when text is present
+        <div className="border border-gray-300 rounded-xl bg-white/70 shadow-sm">
+          <div className="border-b border-gray-300 p-4 bg-primary-50 rounded-t-xl">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <FileUp className="w-5 h-5 text-gray-400" />
+                <Subheader2 className="text-gray-700">
+                  {selectedFile || "Uploaded Book"}
+                </Subheader2>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  document.getElementById("file-input")?.click();
+                }}
+                className="text-sm text-primary-600 hover:text-primary-800 font-medium"
+              >
+                Change file
+              </button>
+            </div>
+            <input
+              id="file-input"
+              type="file"
+              accept=".pdf,.epub"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+          </div>
+          <div
+            className="max-h-[400px] overflow-y-auto rounded-lg px-8 my-4"
+            style={{
+              scrollbarWidth: "thin",
+              scrollbarColor: "#CBD5E1 transparent",
+            }}
+          >
+            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+              {text}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isProcessing && (
+        <div className="mt-4 text-center text-gray-500">
+          <Paragraph>
+            Processing your file, this may take a few moments...
           </Paragraph>
         </div>
       )}

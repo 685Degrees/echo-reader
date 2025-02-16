@@ -54,7 +54,7 @@ export default function Home() {
     <div className="bg-primary-100 min-h-screen ">
       <Header />
       <main className="pt-20 flex flex-col items-center justify-center p-8 space-y-8">
-        <BookDropZone onTextExtracted={setBookText} />
+        <BookDropZone onTextExtracted={setBookText} text={bookText} />
 
         {bookText && (
           <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
@@ -83,12 +83,6 @@ export default function Home() {
             {isDiscussing && error && (
               <div className="text-red-500 text-sm">{error}</div>
             )}
-          </div>
-        )}
-
-        {bookText && (
-          <div className="w-full max-w-2xl p-4 border border-gray-300 rounded-xl overflow-auto">
-            <p className="text-gray-700 whitespace-pre-wrap">{bookText}</p>
           </div>
         )}
       </main>
