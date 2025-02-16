@@ -76,8 +76,8 @@ export default function Home() {
     }
   };
 
-  // New function to handle saving audio
-  const handleSaveAudio = async (): Promise<string> => {
+  // Modify handleSaveAudio to accept duration
+  const handleSaveAudio = async (duration: number): Promise<string> => {
     if (!saveStream) {
       throw new Error("No audio stream available");
     }
@@ -155,11 +155,11 @@ export default function Home() {
           <Subheader className="mb-6 text-primary-800">Upload a book</Subheader>
           <BookDropZone
             onTextExtracted={handleTextExtracted}
-            onSaveAudio={handleSaveAudio}
+            onSaveAudio={() => handleSaveAudio(duration || 0)}
             onBookSaved={loadBooks}
             text={bookText}
             duration={duration}
-            isAudioReady={isAudioReady}
+            isAudioReady={duration !== 0}
           />
         </div>
 
