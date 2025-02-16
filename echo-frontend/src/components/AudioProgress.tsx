@@ -18,20 +18,20 @@ export function AudioProgress({
 }: AudioProgressProps) {
   return (
     <div className="w-full space-y-2">
-      <div className="relative w-full h-2 bg-gray-100 rounded-full">
+      <div className="relative w-full h-2 bg-primary-50 rounded-full">
         {/* Buffered portion */}
         <div
-          className="absolute left-0 top-0 h-full rounded-full bg-gray-300 transition-all duration-300"
+          className="absolute left-0 top-0 h-full rounded-full bg-primary-200 transition-all duration-300"
           style={{ width: `${bufferingProgress}%` }}
         />
         {/* Played portion */}
         <div
-          className="absolute left-0 top-0 h-full bg-gray-800 rounded-full"
+          className="absolute left-0 top-0 h-full bg-primary-800 rounded-full"
           style={{ width: `${progressPercent}%` }}
         />
         {/* Thumb slider */}
         <div
-          className="absolute h-4 w-4 bg-black rounded-full -mt-1 -ml-2"
+          className="absolute h-4 w-4 bg-primary-950 rounded-full -mt-1 -ml-2"
           style={{ left: `${progressPercent}%` }}
         />
         <input

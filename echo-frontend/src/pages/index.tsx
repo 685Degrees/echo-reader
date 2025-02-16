@@ -51,9 +51,9 @@ export default function Home() {
   };
 
   return (
-    <>
+    <div className="bg-primary-100 min-h-screen ">
       <Header />
-      <main className="min-h-screen pt-20 flex flex-col items-center justify-center p-8 space-y-8">
+      <main className="pt-20 flex flex-col items-center justify-center p-8 space-y-8">
         <BookDropZone onTextExtracted={setBookText} />
 
         {bookText && (
@@ -75,7 +75,7 @@ export default function Home() {
             <button
               onClick={handleDiscussToggle}
               disabled={isConnecting}
-              className="w-full py-6 sm:py-8 px-4 text-lg sm:text-xl font-medium bg-black text-white rounded-2xl max-w-sm hover:bg-gray-700 transition duration-200 disabled:bg-gray-400"
+              className="w-full py-6 sm:py-8 px-4 text-lg sm:text-xl font-medium bg-primary-800 text-white rounded-2xl max-w-sm hover:bg-primary-600 transition duration-200 disabled:bg-primary-400"
             >
               {getButtonText()}
             </button>
@@ -92,6 +92,6 @@ export default function Home() {
           </div>
         )}
       </main>
-    </>
+    </div>
   );
 }

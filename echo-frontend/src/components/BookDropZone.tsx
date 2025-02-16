@@ -148,9 +148,9 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
   return (
     <div
       className={cn(
-        "w-full max-w-2xl aspect-video border-2 border-dashed rounded-lg",
-        "flex flex-col items-center justify-center p-8",
-        "hover:bg-gray-50",
+        "w-full max-w-2xl aspect-video border-2 border-dashed rounded-2xl",
+        "flex flex-col items-center justify-center p-8 bg-white/70",
+        "hover:bg-white/90",
         "transition-colors duration-200",
         isDragging ? "border-blue-500 bg-blue-50" : "border-gray-400",
         "cursor-pointer"

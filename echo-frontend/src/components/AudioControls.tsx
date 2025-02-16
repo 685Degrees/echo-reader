@@ -24,30 +24,30 @@ export function AudioControls({
       >
         <RotateCcw
           size={36}
-          className="text-gray-500 group-hover:text-gray-600 sm:hidden"
+          className="text-primary-500 group-hover:text-primary-600 sm:hidden"
           strokeWidth={1.25}
         />
         <RotateCcw
           size={48}
-          className="hidden sm:block text-gray-500 group-hover:text-gray-600"
+          className="hidden sm:block text-primary-500 group-hover:text-primary-600"
           strokeWidth={1.25}
         />
-        <span className="absolute text-xs mb-[24px] sm:mb-[30px] font-bold text-gray-500 group-hover:text-gray-600 mt-6 sm:mt-8">
+        <span className="absolute text-xs mb-[24px] sm:mb-[30px] font-bold text-primary-500 group-hover:text-primary-600 mt-6 sm:mt-8">
           30
         </span>
       </button>
 
       <button
-        className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white hover:bg-gray-100 transition-colors shadow-[0_3px_20px_-3px_rgba(0,0,0,0.2)]"
+        className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white hover:bg-gray-50 transition-colors shadow-[0_3px_20px_-3px_rgba(0,0,0,0.2)]"
         onClick={onPlayPause}
         disabled={isLoading}
       >
         {isLoading ? (
-          <div className="w-6 h-6 border-2 border-gray-700 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-primary-700 border-t-transparent rounded-full animate-spin" />
         ) : isPlaying ? (
-          <Pause className="w-8 h-8 sm:w-10 sm:h-10 text-gray-700" />
+          <Pause className="w-8 h-8 sm:w-10 sm:h-10 text-primary-700" />
         ) : (
-          <Play className="w-8 h-8 sm:w-10 sm:h-10 text-gray-700 ml-1" />
+          <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary-700 ml-1" />
         )}
       </button>
 
@@ -58,15 +58,15 @@ export function AudioControls({
       >
         <RotateCw
           size={36}
-          className="text-gray-500 group-hover:text-gray-600 sm:hidden"
+          className="text-primary-500 group-hover:text-primary-600 sm:hidden"
           strokeWidth={1.25}
         />
         <RotateCw
           size={48}
-          className="hidden sm:block text-gray-500 group-hover:text-gray-600"
+          className="hidden sm:block text-primary-500 group-hover:text-primary-600"
           strokeWidth={1.25}
         />
-        <span className="absolute text-xs mb-[24px] sm:mb-[30px] font-bold text-gray-500 group-hover:text-gray-600 mt-6 sm:mt-8">
+        <span className="absolute text-xs mb-[24px] sm:mb-[30px] font-bold text-primary-500 group-hover:text-primary-600 mt-6 sm:mt-8">
           30
         </span>
       </button>
