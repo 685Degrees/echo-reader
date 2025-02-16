@@ -56,7 +56,7 @@ export default function Home() {
       {bookText && (
         <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
           <AudioProgress
-            progress={(currentTimeSeconds / (duration || 1)) * 100}
+            progressPercent={(currentTimeSeconds / (duration || 1)) * 100}
             bufferingProgress={bufferingProgress}
             duration={duration}
             currentTime={currentTimeSeconds}
