@@ -2,9 +2,8 @@ import { useState, useCallback } from "react";
 import { cn, cleanTextWithGemini } from "@/lib/utils";
 import { FileUp } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
-// @ts-ignore: react-pdftotext module has no type declarations
-import pdfToText from "react-pdftotext";
 import ePub from "epubjs";
+import pdfToText from "react-pdftotext";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;

@@ -6,11 +6,24 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function formatTime(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
+  }
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+
 const genAI = new GoogleGenerativeAI(
   process.env.NEXT_PUBLIC_GEMINI_API_KEY || ""
 );
 
-const modelName = "gemini-2.0-flash-lite-preview-02-05";
+const modelName = "gemini-2.0-flash";
 const generationConfig = {
   temperature: 0,
   max_output_tokens: 100000,
@@ -166,7 +179,7 @@ Follow these rules precisely:
 3. Maintain chapter and section hierarchy
 4. Remove publishing information
 5. Remove footnotes
-6. Fix awkward line breaks between words (e.g. "h ello" -> "hello")
+6. Fix awkward spacing between words ("h ello" -> "hello", "L OR D O F THE R I N G S" -> "LORD OF THE RINGS")
 7. Output only the cleaned text without explanations
 8. Never add new content or change the wording
 9. Keep text exactly as is if it's already clean
@@ -175,10 +188,10 @@ Example:
 <uncleaned_text>
 THINKING, FAST AND SLOW
               
-THINKING, FAST AND SLOW
+THIN KING, F AST AND SLOW
 Daniel Kahneman
 
-Published by Farrar, Straus and Giroux
+Published by Farrar, Str aus and Giroux
 New York, NY
 Copyright © 2011
 
@@ -188,11 +201,11 @@ ISBN: 978-0374275631
 First Edition
 Printed in the United States of America
 
-                 INTRODUCTION
+                 IN TR O D U C T I O N
 
      Every au  thor, I sup pose, has in 
-mind a setting in which readers of his
-or her work could benefit from read-
+mind a setting in whi ch readers of his
+or her work could ben efit from read-
 ing it. In writing Think ing, Fast and
 Slow, I hoped to improve the abi lity
 to identify and understand errors of
@@ -200,12 +213,13 @@ judgment and choice, in others and
 eventually in ourselv es.¹                 33
 
 _________________
-¹ This goal was shared by many of my col-
+¹ This goal was shared by ma ny of my col-
 leagues in the judgment and decision-making
-community who have spe nt their careers
+community who have spe nt the ir careers
 studying human irrationality.
 </uncleaned_text>
 
+Output:
 <cleaned_text>
 THINKING, FAST AND SLOW
 
@@ -214,15 +228,12 @@ INTRODUCTION
 Every author, I suppose, has in mind a setting in which readers of his or her work could benefit from reading it. In writing Thinking, Fast and Slow, I hoped to improve the ability to identify and understand errors of judgment and choice, in others and eventually in ourselves.
 </cleaned_text>
 
-
--- 
 Here's the text you need to clean:
-<input>
+<uncleaned_text>
 ${chunk}
-</input>
+</uncleaned_text>
 
-Output ONLY the cleaned text.
-`;
+Output ONLY the cleaned text between the <cleaned_text> tags.`;
 
     const result = await model.generateContent(textCleaningPrompt);
     const response = result.response.text();
@@ -247,9 +258,6 @@ export async function cleanTextWithGemini(text: string): Promise<string> {
   try {
     // Split text into chunks
     const chunks = splitTextIntoChunks(text);
-    console.log("Chunks:", chunks[3], chunks[4]);
-    const string = "sadsadsdasd";
-    console.log("ads", string.slice(0, 100));
 
     console.log("Number of chunks:", chunks.length);
     console.log(

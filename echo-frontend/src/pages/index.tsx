@@ -3,34 +3,27 @@ import { BookDropZone } from "@/components/BookDropZone";
 import { AudioProgress } from "@/components/AudioProgress";
 import { AudioControls } from "@/components/AudioControls";
 import { useWebRTC } from "@/hooks/useWebRTC";
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 
 export default function Home() {
   const [bookText, setBookText] = useState("");
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isDiscussing, setIsDiscussing] = useState(false);
-  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
 
   const { isConnected, isConnecting, startSession, stopSession, error } =
     useWebRTC();
 
-  const handlePlayPauseClick = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleSkipForward = () => {
-    const newTime = Math.min(currentTimeSeconds + 30, 6 * 60 * 60); // Max 6 hours
-    setCurrentTimeSeconds(newTime);
-  };
-
-  const handleSkipBack = () => {
-    const newTime = Math.max(currentTimeSeconds - 30, 0); // Min 0 seconds
-    setCurrentTimeSeconds(newTime);
-  };
-
-  const handleProgressChange = (progressPercent: number) => {
-    const newTimeSeconds = Math.round((progressPercent / 100) * 6 * 60 * 60);
-    setCurrentTimeSeconds(newTimeSeconds);
-  };
+  const {
+    isPlaying,
+    isLoading,
+    currentTimeSeconds,
+    duration,
+    bufferingProgress,
+    handlePlayPause,
+    handleSkipForward,
+    handleSkipBack,
+    handleProgressChange,
+    setIsPlaying,
+  } = useAudioPlayer(bookText);
 
   const handleDiscussToggle = async () => {
     if (isDiscussing) {
@@ -39,7 +32,10 @@ export default function Home() {
       stopSession();
     } else {
       setIsDiscussing(true);
-      setIsPlaying(false);
+      // Pause audio when starting discussion
+      if (isPlaying) {
+        handlePlayPause();
+      }
       if (!isConnected && !isConnecting) {
         await startSession();
       }
@@ -60,12 +56,16 @@ export default function Home() {
       {bookText && (
         <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
           <AudioProgress
-            progress={(currentTimeSeconds / (6 * 60 * 60)) * 100}
+            progress={(currentTimeSeconds / (duration || 1)) * 100}
+            bufferingProgress={bufferingProgress}
+            duration={duration}
+            currentTime={currentTimeSeconds}
             onChange={handleProgressChange}
           />
           <AudioControls
             isPlaying={isPlaying}
-            onPlayPause={handlePlayPauseClick}
+            isLoading={isLoading}
+            onPlayPause={handlePlayPause}
             onSkipForward={handleSkipForward}
             onSkipBack={handleSkipBack}
           />
