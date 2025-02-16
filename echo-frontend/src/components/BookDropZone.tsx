@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { cn, cleanTextWithGemini } from "@/lib/utils";
-import { FileUp, Save, Check } from "lucide-react";
+import { FileUp, Save, Check, Loader2 } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 import ePub from "epubjs";
 import pdfToText from "react-pdftotext";
@@ -23,6 +23,7 @@ export function BookDropZone({
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
@@ -70,7 +71,10 @@ export function BookDropZone({
   const extractTextFromPdf = async (file: File) => {
     try {
       setIsProcessing(true);
+      setProcessingStatus("Extracting text from PDF...");
       const text = await pdfToText(file);
+
+      setProcessingStatus("Cleaning and formatting text...");
       const cleanedText = await cleanTextWithGemini(text);
       console.log("Cleaned text:", cleanedText);
       onTextExtracted(cleanedText);
@@ -80,12 +84,14 @@ export function BookDropZone({
       console.error("Failed to extract text from PDF", error);
     } finally {
       setIsProcessing(false);
+      setProcessingStatus("");
     }
   };
 
   const extractTextFromEpub = async (file: File) => {
     try {
       setIsProcessing(true);
+      setProcessingStatus("Extracting text from EPUB...");
       const arrayBuffer = await file.arrayBuffer();
       const book = ePub(arrayBuffer);
       await book.ready;
@@ -112,6 +118,7 @@ export function BookDropZone({
 
       console.log("Full text:", fullText.slice(0, 1000));
 
+      setProcessingStatus("Cleaning and formatting text...");
       const cleanedText = await cleanTextWithGemini(
         fullText.trim().slice(0, 1000)
       );
@@ -124,6 +131,7 @@ export function BookDropZone({
       console.error("Failed to extract text from EPUB", error);
     } finally {
       setIsProcessing(false);
+      setProcessingStatus("");
     }
   };
 
@@ -192,13 +200,15 @@ export function BookDropZone({
             "hover:bg-white/90",
             "transition-colors duration-200",
             isDragging ? "border-blue-500 bg-blue-50" : "border-gray-400",
-            "cursor-pointer"
+            isProcessing ? "cursor-wait" : "cursor-pointer"
           )}
           onDragEnter={handleDragIn}
           onDragLeave={handleDragOut}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          onClick={() => document.getElementById("file-input")?.click()}
+          onClick={() =>
+            !isProcessing && document.getElementById("file-input")?.click()
+          }
         >
           <input
             id="file-input"
@@ -206,23 +216,37 @@ export function BookDropZone({
             accept=".pdf,.epub"
             className="hidden"
             onChange={handleFileSelect}
+            disabled={isProcessing}
           />
 
-          <FileUp
-            className={cn(
-              "w-12 h-12 mb-4",
-              isDragging ? "text-blue-500" : "text-gray-400"
-            )}
-          />
+          {isProcessing ? (
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+              <div className="text-center">
+                <Subheader2 className="text-gray-700">
+                  {processingStatus}
+                </Subheader2>
+              </div>
+            </div>
+          ) : (
+            <>
+              <FileUp
+                className={cn(
+                  "w-12 h-12 mb-4",
+                  isDragging ? "text-blue-500" : "text-gray-400"
+                )}
+              />
 
-          <div className="text-center">
-            <Subheader2 className="mb-2 text-gray-700">
-              Drop your book here
-            </Subheader2>
-            <Paragraph className="text-gray-500">
-              Supports PDF and EPUB formats • Maximum file size: 10MB
-            </Paragraph>
-          </div>
+              <div className="text-center">
+                <Subheader2 className="mb-2 text-gray-700">
+                  Drop your book here
+                </Subheader2>
+                <Paragraph className="text-gray-500">
+                  Supports PDF and EPUB formats • Maximum file size: 10MB
+                </Paragraph>
+              </div>
+            </>
+          )}
         </div>
       ) : (
         // Show compact view with text when text is present
