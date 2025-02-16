@@ -26,7 +26,7 @@ export default async function handler(
 
     // Generate audio stream using the ElevenLabs client
     const audioStream = await client.generate({
-      voice: "Rachel",
+      voice: "George",
       model_id: "eleven_turbo_v2_5",
       text,
     });

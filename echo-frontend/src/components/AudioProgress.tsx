@@ -22,17 +22,17 @@ export function AudioProgress({
         {/* Buffered portion */}
         <div
           className="absolute left-0 top-0 h-full rounded-full bg-primary-200 transition-all duration-300"
-          style={{ width: `${bufferingProgress}%` }}
+          style={{ width: `${Math.min(bufferingProgress, 100)}%` }}
         />
         {/* Played portion */}
         <div
           className="absolute left-0 top-0 h-full bg-primary-800 rounded-full"
-          style={{ width: `${progressPercent}%` }}
+          style={{ width: `${Math.min(progressPercent, 100)}%` }}
         />
         {/* Thumb slider */}
         <div
           className="absolute h-4 w-4 bg-primary-950 rounded-full -mt-1 -ml-2"
-          style={{ left: `${progressPercent}%` }}
+          style={{ left: `${Math.min(progressPercent, 100)}%` }}
         />
         <input
           type="range"
