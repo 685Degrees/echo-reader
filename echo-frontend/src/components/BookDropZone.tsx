@@ -1,9 +1,12 @@
 import { useState, useCallback } from "react";
 import { cn, cleanTextWithGemini } from "@/lib/utils";
-import { FileUp } from "lucide-react";
+import { FileUp, Save } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 import ePub from "epubjs";
 import pdfToText from "react-pdftotext";
+import { saveBook } from "@/lib/bookStorage";
+import { Book } from "@/types/book";
+import { slugify } from "@/lib/utils";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
@@ -14,7 +17,29 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+
+  const handleSave = async () => {
+    if (!text || !selectedFile) return;
+
+    setIsSaving(true);
+    try {
+      const book: Book = {
+        bookSlug: slugify(selectedFile),
+        title: selectedFile.replace(/\.(pdf|epub)$/, ""),
+        text,
+        audioUrl: "", // We'll need to implement audio saving later
+        lengthSeconds: 0, // This will be updated when we know the duration
+        createdAt: new Date().toISOString(),
+      };
+      await saveBook(book);
+    } catch (error) {
+      console.error("Failed to save book:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -37,10 +62,10 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
     try {
       setIsProcessing(true);
       const text = await pdfToText(file);
-      // console.log("Text:", text.slice(0, 1000));
       const cleanedText = await cleanTextWithGemini(text);
       console.log("Cleaned text:", cleanedText);
       onTextExtracted(cleanedText);
+      setSelectedFile(file.name);
       console.log("Extracted and cleaned text from PDF");
     } catch (error) {
       console.error("Failed to extract text from PDF", error);
@@ -84,6 +109,7 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
       console.log("Cleaned text:", cleanedText);
 
       onTextExtracted(cleanedText);
+      setSelectedFile(file.name);
       console.log("Extracted and cleaned text from EPUB successfully");
     } catch (error) {
       console.error("Failed to extract text from EPUB", error);
@@ -200,15 +226,31 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
                   {selectedFile || "Uploaded Book"}
                 </Subheader2>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  document.getElementById("file-input")?.click();
-                }}
-                className="text-sm text-primary-600 hover:text-primary-800 font-medium"
-              >
-                Change file
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving || !selectedFile}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium",
+                    "transition duration-200",
+                    isSaving || !selectedFile
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-primary-100 text-primary-600 hover:bg-primary-200"
+                  )}
+                >
+                  <Save className="w-4 h-4" />
+                  {isSaving ? "Saving..." : "Save to Library"}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document.getElementById("file-input")?.click();
+                  }}
+                  className="text-sm text-primary-600 hover:text-primary-800 font-medium"
+                >
+                  Change file
+                </button>
+              </div>
             </div>
             <input
               id="file-input"
@@ -226,10 +268,12 @@ export function BookDropZone({ onTextExtracted, text }: BookDropZoneProps) {
         </div>
       )}
 
-      {isProcessing && (
+      {(isProcessing || isSaving) && (
         <div className="mt-4 text-center text-gray-500">
           <Paragraph>
-            Processing your file, this may take a few moments...
+            {isProcessing
+              ? "Processing your file, this may take a few moments..."
+              : "Saving your book..."}
           </Paragraph>
         </div>
       )}

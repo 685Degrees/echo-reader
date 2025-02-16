@@ -7,36 +7,35 @@ import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { Header } from "@/components/Header";
 
 export default function Home() {
-  const [bookText, setBookText] = useState("as");
+  const [bookText, setBookText] = useState("");
   const [isDiscussing, setIsDiscussing] = useState(false);
 
   const { isConnected, isConnecting, startSession, stopSession, error } =
     useWebRTC();
-  const [isPlaying, setIsPlaying] = useState(false);
 
-  // const {
-  //   isPlaying,
-  //   isLoading,
-  //   currentTimeSeconds,
-  //   duration,
-  //   bufferingProgress,
-  //   handlePlayPause,
-  //   handleSkipForward,
-  //   handleSkipBack,
-  //   handleProgressChange,
-  //   setIsPlaying,
-  // } = useAudioPlayer(bookText);
+  const {
+    isPlaying,
+    isLoading,
+    currentTimeSeconds,
+    duration,
+    bufferingProgress,
+    handlePlayPause,
+    handleSkipForward,
+    handleSkipBack,
+    handleProgressChange,
+    setIsPlaying,
+  } = useAudioPlayer(bookText);
 
   const handleDiscussToggle = async () => {
     if (isDiscussing) {
       setIsDiscussing(false);
-      // setIsPlaying(true);
+      setIsPlaying(true);
       stopSession();
     } else {
       setIsDiscussing(true);
       // Pause audio when starting discussion
       if (isPlaying) {
-        // handlePlayPause();
+        handlePlayPause();
       }
       if (!isConnected && !isConnecting) {
         await startSession();
@@ -59,7 +58,7 @@ export default function Home() {
 
         {bookText && (
           <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">
-            {/* <AudioProgress
+            <AudioProgress
               progressPercent={(currentTimeSeconds / (duration || 1)) * 100}
               bufferingProgress={bufferingProgress}
               duration={duration}
@@ -72,7 +71,7 @@ export default function Home() {
               onPlayPause={handlePlayPause}
               onSkipForward={handleSkipForward}
               onSkipBack={handleSkipBack}
-            /> */}
+            />
             <button
               onClick={handleDiscussToggle}
               disabled={isConnecting}
