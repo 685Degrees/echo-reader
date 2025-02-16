@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 export function useAudioPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -116,6 +116,61 @@ export function useAudioPlayer() {
     }
   };
 
+  // Wrap setupSavedAudio in useCallback
+  const setupSavedAudio = useCallback((audioUrl: string) => {
+    if (audioRef.current) {
+      // Clean up existing audio
+      audioRef.current.pause();
+      URL.revokeObjectURL(audioRef.current.src);
+      audioRef.current = null;
+    }
+
+    setIsLoading(true);
+    setIsAudioReady(false);
+    setBufferingProgress(0);
+    setDuration(0);
+
+    try {
+      const newAudio = new Audio(audioUrl);
+      audioRef.current = newAudio;
+
+      // Add all the same event listeners as setupAudioStream
+      newAudio.onloadedmetadata = () => {
+        if (
+          newAudio.duration &&
+          !isNaN(newAudio.duration) &&
+          newAudio.duration !== Infinity
+        ) {
+          setDuration(newAudio.duration);
+        }
+      };
+
+      newAudio.ondurationchange = () => {
+        if (
+          newAudio.duration &&
+          !isNaN(newAudio.duration) &&
+          newAudio.duration !== Infinity
+        ) {
+          setDuration(newAudio.duration);
+        }
+      };
+
+      newAudio.onended = () => setIsPlaying(false);
+      newAudio.ontimeupdate = () => {
+        setCurrentTimeSeconds(newAudio.currentTime);
+      };
+
+      newAudio.addEventListener("canplaythrough", () => {
+        setIsAudioReady(true);
+        setIsLoading(false);
+        setBufferingProgress(100);
+      });
+    } catch (error) {
+      console.error("Error loading saved audio:", error);
+      setIsLoading(false);
+    }
+  }, []); // Empty dependency array since it only uses setState functions which are stable
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -178,64 +233,6 @@ export function useAudioPlayer() {
     }
   };
 
-  // Add a new method to load from URL
-  const setupAudioFromUrl = (audioUrl: string) => {
-    if (audioRef.current) {
-      // Clean up existing audio
-      audioRef.current.pause();
-      URL.revokeObjectURL(audioRef.current.src);
-      audioRef.current = null;
-    }
-
-    setIsLoading(true);
-    setIsAudioReady(false);
-    setBufferingProgress(0);
-    setDuration(0);
-
-    try {
-      const newAudio = new Audio(audioUrl);
-      audioRef.current = newAudio;
-
-      newAudio.onloadedmetadata = () => {
-        if (
-          newAudio.duration &&
-          !isNaN(newAudio.duration) &&
-          newAudio.duration !== Infinity
-        ) {
-          setDuration(newAudio.duration);
-        }
-      };
-
-      newAudio.ondurationchange = () => {
-        if (
-          newAudio.duration &&
-          !isNaN(newAudio.duration) &&
-          newAudio.duration !== Infinity
-        ) {
-          setDuration(newAudio.duration);
-        }
-      };
-
-      newAudio.onended = () => setIsPlaying(false);
-      newAudio.ontimeupdate = () => {
-        setCurrentTimeSeconds(newAudio.currentTime);
-      };
-
-      // Add event listener for when audio is ready
-      newAudio.addEventListener("canplaythrough", () => {
-        setIsAudioReady(true);
-        setIsLoading(false);
-        setBufferingProgress(100);
-      });
-
-      // Start loading the audio
-      newAudio.load();
-    } catch (error) {
-      console.error("Error preparing audio:", error);
-      setIsLoading(false);
-    }
-  };
-
   return {
     isPlaying,
     isLoading,
@@ -249,6 +246,6 @@ export function useAudioPlayer() {
     handleProgressChange,
     setIsPlaying,
     setupAudioStream,
-    setupAudioFromUrl,
+    setupSavedAudio,
   };
 }

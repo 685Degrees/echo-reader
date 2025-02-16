@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { cn, cleanTextWithGemini } from "@/lib/utils";
-import { FileUp, Save, Check, Loader2 } from "lucide-react";
+import { FileUp, Save, Check, Loader2, BookOpenIcon } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 import ePub from "epubjs";
 import pdfToText from "react-pdftotext";
@@ -262,10 +262,12 @@ export function BookDropZone({
           <div className="border-b border-gray-300 p-4 bg-primary-50 rounded-t-xl">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <FileUp className="w-5 h-5 text-gray-400" />
-                <Subheader2 className="text-gray-700">
-                  {selectedFile || "Uploaded Book"}
-                </Subheader2>
+                <BookOpenIcon className="w-5 h-5 text-gray-400" />
+                <div className="flex-1">
+                  <Subheader2 className="text-gray-700">
+                    {selectedFile || "Uploaded Book"}
+                  </Subheader2>
+                </div>
               </div>
               <div className="flex items-center gap-4">
                 <button
