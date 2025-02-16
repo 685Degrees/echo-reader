@@ -39,17 +39,15 @@ export function BookDropZone({
 
     setIsSaving(true);
     try {
-      // Get the audio URL using the saved stream
       const audioUrl = await onSaveAudio();
 
-      // Then create and save the book
       const book: Book = {
         id: uuidv4(),
         bookSlug: slugify(selectedFile),
         title: selectedFile.replace(/\.(pdf|epub)$/, ""),
         text,
         audioUrl,
-        lengthSeconds: duration || 0,
+        lengthSeconds: Math.round(duration || 0),
         createdAt: new Date().toISOString(),
       };
       await saveBook(book);
