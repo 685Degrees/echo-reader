@@ -90,3 +90,47 @@ export function deleteAllBooks(): void {
     throw new Error("Failed to delete all books");
   }
 }
+
+interface BookUpdate {
+  title?: string;
+  // Add other fields that can be updated here in the future
+}
+
+export const updateBook = async (
+  id: string,
+  updates: BookUpdate
+): Promise<void> => {
+  const book = getBookById(id);
+  if (!book) {
+    throw new Error(`Book with id ${id} not found`);
+  }
+
+  // Get all metadata
+  const metadata = getBookMetadata();
+  const metadataIndex = metadata.findIndex((meta) => meta.id === id);
+  if (metadataIndex === -1) {
+    throw new Error(`Metadata for book ${id} not found`);
+  }
+
+  // Update the book object
+  const updatedBook = {
+    ...book,
+    ...updates,
+  };
+
+  // Update metadata
+  const updatedMetadata = [...metadata];
+  updatedMetadata[metadataIndex] = {
+    ...metadata[metadataIndex],
+    ...updates,
+  };
+
+  // Save both the updated book and metadata
+  try {
+    localStorage.setItem(`${BOOKS_KEY}-${id}`, JSON.stringify(updatedBook));
+    localStorage.setItem(BOOK_METADATA_KEY, JSON.stringify(updatedMetadata));
+  } catch (error) {
+    console.error("Failed to save updated book:", error);
+    throw new Error("Failed to save book updates");
+  }
+};
