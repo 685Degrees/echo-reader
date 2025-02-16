@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
   onSaveAudio: () => Promise<string>;
+  onBookSaved?: () => void;
   text?: string;
   duration?: number;
   isAudioReady?: boolean;
@@ -20,6 +21,7 @@ interface BookDropZoneProps {
 export function BookDropZone({
   onTextExtracted,
   onSaveAudio,
+  onBookSaved,
   text,
   duration,
   isAudioReady = false,
@@ -52,6 +54,7 @@ export function BookDropZone({
       };
       await saveBook(book);
       setIsSaved(true);
+      onBookSaved?.();
     } catch (error) {
       console.error("Failed to save book:", error);
     } finally {

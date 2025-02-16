@@ -130,15 +130,18 @@ export default function Home() {
                     </p>
                   </div>
                 ) : (
-                  books.map((book) => (
-                    <BookCard
-                      id={book.id}
-                      title={book.title}
-                      lengthSeconds={book.lengthSeconds}
-                      onDelete={handleBookDelete}
-                      onUpdate={handleBookUpdate}
-                    />
-                  ))
+                  [...books]
+                    .reverse()
+                    .map((book) => (
+                      <BookCard
+                        key={book.id}
+                        id={book.id}
+                        title={book.title}
+                        lengthSeconds={book.lengthSeconds}
+                        onDelete={handleBookDelete}
+                        onUpdate={handleBookUpdate}
+                      />
+                    ))
                 )}
               </div>
             </div>
@@ -153,6 +156,7 @@ export default function Home() {
           <BookDropZone
             onTextExtracted={handleTextExtracted}
             onSaveAudio={handleSaveAudio}
+            onBookSaved={loadBooks}
             text={bookText}
             duration={duration}
             isAudioReady={isAudioReady}
