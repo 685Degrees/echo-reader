@@ -310,3 +310,38 @@ export async function generateSpeech(
 
   return response.body;
 }
+
+export async function saveAudioStream(
+  stream: ReadableStream<Uint8Array>,
+  bookId: string
+): Promise<string> {
+  try {
+    const chunks: Uint8Array[] = [];
+    const reader = stream.getReader();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+
+    const blob = new Blob(chunks, { type: "audio/mpeg" });
+    const formData = new FormData();
+    formData.append("audio", blob, `${bookId}.mp3`);
+
+    const response = await fetch("/api/save-audio", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to save audio file");
+    }
+
+    const { audioUrl } = await response.json();
+    return audioUrl;
+  } catch (error) {
+    console.error("Error saving audio stream:", error);
+    throw error;
+  }
+}

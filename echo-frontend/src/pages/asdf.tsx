@@ -5,11 +5,14 @@ import { AudioControls } from "@/components/AudioControls";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import { Header } from "@/components/Header";
-import { generateSpeech } from "@/lib/utils";
+import { generateSpeech, saveAudioStream } from "@/lib/utils";
+import { Book } from "@/types/book";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Home() {
   const [bookText, setBookText] = useState("");
   const [isDiscussing, setIsDiscussing] = useState(false);
+  const [saveStream, setSaveStream] = useState<ReadableStream | null>(null);
 
   const { isConnected, isConnecting, startSession, stopSession, error } =
     useWebRTC();
@@ -32,10 +35,28 @@ export default function Home() {
     setBookText(text);
     try {
       const stream = await generateSpeech(text);
-      await setupAudioStream(stream);
+      // Clone the stream for potential future saving
+      const [playStream, saveStream] = stream.tee();
+
+      // Store the save stream for later use when saving
+      setSaveStream(saveStream);
+
+      // Setup audio for preview/playback
+      await setupAudioStream(playStream);
     } catch (error) {
       console.error("Error generating speech:", error);
     }
+  };
+
+  // New function to handle saving audio
+  const handleSaveAudio = async (): Promise<string> => {
+    if (!saveStream) {
+      throw new Error("No audio stream available");
+    }
+
+    const bookId = uuidv4();
+    const audioUrl = await saveAudioStream(saveStream, bookId);
+    return audioUrl;
   };
 
   const handleDiscussToggle = async () => {
@@ -68,6 +89,7 @@ export default function Home() {
       <main className="pt-20 flex flex-col items-center justify-center p-8 space-y-8">
         <BookDropZone
           onTextExtracted={handleTextExtracted}
+          onSaveAudio={handleSaveAudio}
           text={bookText}
           duration={duration}
         />

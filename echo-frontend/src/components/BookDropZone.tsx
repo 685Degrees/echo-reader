@@ -11,12 +11,14 @@ import { v4 as uuidv4 } from "uuid";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
+  onSaveAudio: () => Promise<string>;
   text?: string;
   duration?: number;
 }
 
 export function BookDropZone({
   onTextExtracted,
+  onSaveAudio,
   text,
   duration,
 }: BookDropZoneProps) {
@@ -33,12 +35,16 @@ export function BookDropZone({
 
     setIsSaving(true);
     try {
+      // Get the audio URL using the saved stream
+      const audioUrl = await onSaveAudio();
+
+      // Then create and save the book
       const book: Book = {
         id: uuidv4(),
         bookSlug: slugify(selectedFile),
         title: selectedFile.replace(/\.(pdf|epub)$/, ""),
         text,
-        audioUrl: "",
+        audioUrl,
         lengthSeconds: duration || 0,
         createdAt: new Date().toISOString(),
       };

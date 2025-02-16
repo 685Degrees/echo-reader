@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { BookCard } from "@/components/BookCard";
-import { getBookMetadata, getBookById } from "@/lib/bookStorage";
+import {
+  getBookMetadata,
+  getBookById,
+  deleteAllBooks,
+} from "@/lib/bookStorage";
 import { Book, BookMetadata } from "@/types/book";
 
 export default function Library() {
@@ -26,10 +30,30 @@ export default function Library() {
     loadBooks(); // Reload books after deletion
   };
 
+  const handleDeleteAll = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete all books? This action cannot be undone."
+      )
+    ) {
+      deleteAllBooks();
+      loadBooks(); // Reload (empty) book list
+    }
+  };
+
   return (
     <div className="bg-primary-100 min-h-screen ">
       <Header />
       <main className="pt-20 flex flex-col items-center justify-center p-8 space-y-10">
+        {books.length > 0 && (
+          <button
+            onClick={handleDeleteAll}
+            className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+          >
+            Delete All Books
+          </button>
+        )}
+
         {books.length === 0 ? (
           <div className="text-center text-gray-500">
             <p>No books in your library yet.</p>
