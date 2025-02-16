@@ -3,7 +3,6 @@ import { cn, cleanTextWithGemini } from "@/lib/utils";
 import { FileUp } from "lucide-react";
 import { Subheader2, Paragraph } from "@/components/Typography";
 import ePub from "epubjs";
-import pdfToText from "react-pdftotext";
 
 interface BookDropZoneProps {
   onTextExtracted: (text: string) => void;
@@ -35,12 +34,15 @@ export function BookDropZone({ onTextExtracted }: BookDropZoneProps) {
   const extractTextFromPdf = async (file: File) => {
     try {
       setIsProcessing(true);
+
+      // Dynamic import of pdfToText
+      const { default: pdfToText } = await import("react-pdftotext");
       const text = await pdfToText(file);
-      // console.log("Text:", text.slice(0, 1000));
+
       const cleanedText = await cleanTextWithGemini(text);
       console.log("Cleaned text:", cleanedText);
       onTextExtracted(cleanedText);
-      console.log("Extracted and cleaned text from PDF");
+      setSelectedFile(file.name);
     } catch (error) {
       console.error("Failed to extract text from PDF", error);
     } finally {

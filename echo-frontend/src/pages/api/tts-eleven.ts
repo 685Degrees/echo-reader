@@ -1,7 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { ElevenLabsClient } from "elevenlabs";
-import { createWriteStream } from "fs";
-import { v4 as uuid } from "uuid";
 
 if (!process.env.ELEVENLABS_API_KEY) {
   throw new Error("Missing ELEVENLABS_API_KEY environment variable");
