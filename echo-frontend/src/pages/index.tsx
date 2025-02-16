@@ -17,6 +17,7 @@ export default function Home() {
   const [bookText, setBookText] = useState("");
   const [isDiscussing, setIsDiscussing] = useState(false);
   const [saveStream, setSaveStream] = useState<ReadableStream | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { isConnected, isConnecting, startSession, stopSession, error } =
     useWebRTC();
@@ -111,26 +112,37 @@ export default function Home() {
     return "Discuss";
   };
 
+  const filteredBooks = books.filter((book) =>
+    book.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="bg-primary-100 min-h-screen">
       <Header />
       <main className="pt-20 flex flex-col items-center p-8 space-y-12">
         {/* Library Section */}
         <div className="w-full max-w-2xl">
-          <Subheader className="mb-6 text-primary-800">Your Library</Subheader>
+          <Subheader className="text-primary-800 mb-2">Your Library</Subheader>
+          <input
+            type="text"
+            placeholder="Search books..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="px-4 py-2 mb-6 rounded-lg border border-primary-200 bg-white/70 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 w-64"
+          />
           <div className="relative">
             <div className="overflow-x-auto pb-4 hide-scrollbar">
-              <div className="flex space-x-6 w-max">
-                {books.length === 0 ? (
-                  <div className="flex items-center justify-center w-[320px] h-[200px] bg-primary-50 rounded-xl border border-primary-200 flex-shrink-0">
+              <div className="flex space-x-6">
+                {filteredBooks.length === 0 ? (
+                  <div className="flex items-center justify-center w-full h-[180px] bg-primary-50 rounded-xl border border-primary-200 flex-shrink-0">
                     <p className="text-gray-500 text-center px-4">
-                      No books in your library yet.
-                      <br />
-                      Upload a book below to get started.
+                      {books.length === 0
+                        ? "No books in your library yet.\nUpload a book below to get started."
+                        : "No books match your search."}
                     </p>
                   </div>
                 ) : (
-                  [...books]
+                  [...filteredBooks]
                     .reverse()
                     .map((book) => (
                       <BookCard
@@ -145,8 +157,6 @@ export default function Home() {
                 )}
               </div>
             </div>
-            {/* Fade effect on the right */}
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-primary-100 to-transparent pointer-events-none" />
           </div>
         </div>
 
