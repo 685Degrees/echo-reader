@@ -66,7 +66,11 @@ export default function Home() {
     <div className="bg-primary-100 min-h-screen ">
       <Header />
       <main className="pt-20 flex flex-col items-center justify-center p-8 space-y-8">
-        <BookDropZone onTextExtracted={handleTextExtracted} text={bookText} />
+        <BookDropZone
+          onTextExtracted={handleTextExtracted}
+          text={bookText}
+          duration={duration}
+        />
 
         {bookText && (
           <div className="w-full max-w-2xl space-y-8 sm:space-y-12 flex flex-col items-center justify-center">

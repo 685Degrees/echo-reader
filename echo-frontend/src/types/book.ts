@@ -1,4 +1,5 @@
 export interface Book {
+  id: string; // UUID
   bookSlug: string;
   title: string;
   text: string;
@@ -8,6 +9,7 @@ export interface Book {
 }
 
 export interface BookMetadata {
+  id: string; // UUID
   bookSlug: string;
   title: string;
   lengthSeconds: number;

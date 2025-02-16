@@ -1,16 +1,30 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { BookCard } from "@/components/BookCard";
-import { getBookMetadata } from "@/lib/bookStorage";
-import { BookMetadata } from "@/types/book";
+import { getBookMetadata, getBookById } from "@/lib/bookStorage";
+import { Book, BookMetadata } from "@/types/book";
 
 export default function Library() {
-  const [books, setBooks] = useState<BookMetadata[]>([]);
+  const [books, setBooks] = useState<Book[]>([]);
+
+  const loadBooks = () => {
+    const metadata = getBookMetadata();
+    const fullBooks = metadata
+      .map((meta) => {
+        const book = getBookById(meta.id);
+        return book;
+      })
+      .filter((book): book is Book => book !== null);
+    setBooks(fullBooks);
+  };
 
   useEffect(() => {
-    const loadedBooks = getBookMetadata();
-    setBooks(loadedBooks);
+    loadBooks();
   }, []);
+
+  const handleBookDelete = () => {
+    loadBooks(); // Reload books after deletion
+  };
 
   return (
     <div className="bg-primary-100 min-h-screen ">
@@ -24,10 +38,11 @@ export default function Library() {
         ) : (
           books.map((book) => (
             <BookCard
-              key={book.bookSlug}
-              bookSlug={book.bookSlug}
+              key={book.id}
+              id={book.id}
               title={book.title}
               lengthSeconds={book.lengthSeconds}
+              onDelete={handleBookDelete}
             />
           ))
         )}
